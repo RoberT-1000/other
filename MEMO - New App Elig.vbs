@@ -1,0 +1,62 @@
+'This script was developed by Charles Potter & Robert Kalb from Anoka County
+
+'GATHERING STATS----------------------------------------------------------------------------------------------------'
+name_of_script = "MEMO - New APP Elig"
+start_time = timer
+
+'LOADING ROUTINE FUNCTIONS
+Set run_another_script_fso = CreateObject("Scripting.FileSystemObject")
+Set fso_command = run_another_script_fso.OpenTextFile("Q:\Blue Zone Scripts\County beta staging\FUNCTIONS FILE.vbs")
+text_from_the_other_script = fso_command.ReadAll
+fso_command.Close
+Execute text_from_the_other_script
+
+EMConnect ""
+
+call navigate_to_screen("SPEC","WCOM")
+EMWriteScreen Approval_month, 3, 46
+EMWriteScreen approval_year, 3, 51
+EMWriteScreen "Y", 3, 74
+transmit
+
+WCOM_count = 0
+FOR each HH_member in HH_member_array
+	DO 								'This DO/LOOP resets to the first page of notices in SPEC/WCOM
+		EMReadScreen more_pages, 8, 18, 72
+		IF more_pages = "MORE:  -" THEN PF7
+	LOOP until more_pages <> "MORE:  -"
+
+	read_row = 7
+	DO
+		EMReadscreen reference_number, 2, read_row, 62 
+		EMReadscreen waiting_check, 7, read_row, 71 'finds if notice has been printed
+		If waiting_check = "Waiting" and reference_number = HH_member THEN 'checking program type and if it's been printed, needs more fool proofing
+			EMSetcursor read_row, 13
+			EMSendKey "x"
+			Transmit
+			pf9
+                  EMWriteScreen "You qualify for MA with a spenddown. However, you may", 3, 15
+                  EMWriteScreen "qualify for lower cost health care coverage on MNSure.", 4, 15
+                  EMWriteScreen "MNSure is a new online marketplace where Minnesotans can", 5, 15
+                  EMWriteScreen "apply to get quality, affordable health care coverage.", 6, 15
+                  EMWriteScreen "For more information, go to:", 8, 15
+                  EMWriteScreen "     http://www.mnsure.org", 9, 15
+		      PF4
+			PF3
+			WCOM_count = WCOM_count + 1
+			exit do
+		ELSE
+			read_row = read_row + 1
+		END IF
+		IF read_row = 18 THEN
+			PF8          'Navigates to the next page of notices.  DO/LOOP until read_row = 18??
+			read_row = 7
+		End if
+	LOOP until reference_number = "  "
+NEXT
+
+IF wcom_count <> 0 THEN 
+  MSGBox "The script has successfully added a worker comment to " & WCOM_count & " notice(s). Please case note if you have not already done so."
+ELSE
+  MSGbox "No Waiting HC elig results were found in this month."
+END IF
