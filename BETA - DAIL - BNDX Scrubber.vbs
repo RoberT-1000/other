@@ -1,9 +1,3 @@
-'This script was developed in Anoka County by Robert Kalb and Charles Potter. This script is currently being run separately from the DAIL Scrubber but
-'could be turned into an enhancement to the DAIL Scrubber for BENDEX messages. The script in its current format has safeguards built in that display
-'the results of the comparison to the worker. If there is a difference in the BNDX claim and the UNEA panels, the worker must request resolve the discrepancy
-'manually but if there is not a significant difference (an amount that can be left to the individual counties) then the worker can choose to delete
-'the BNDX DAIL.
-
 'GATHERING STATS----------------------------------------------------------------------------------------------------
 name_of_script = "BETA - DAIL - BNDX Scrubber"
 start_time = timer
@@ -65,20 +59,20 @@ transmit
 '========== Collects information from BNDX ==========
 EMReadScreen bndx_claim_one_number, 14, 5, 12
   bndx_claim_one_number = replace(bndx_claim_one_number, " ", "")
-EMReadScreen bndx_claim_one_amt, 8, 7, 12
-  bndx_claim_one_amt = replace(bndx_claim_one_amt, " ", "")
-  bndx_claim_one_amt = FormatCurrency(bndx_claim_one_amt)
+EMReadScreen bndx_claim_one_amount, 8, 7, 12
+  bndx_claim_one_amt = replace(bndx_claim_one_amount, " ", "")
+  bndx_claim_one_amt = INT(bndx_claim_one_amt)
 
 EMReadScreen bndx_claim_two_number, 14, 5, 38
   bndx_claim_two_number = replace(bndx_claim_two_number, " ", "")
-EMReadScreen bndx_claim_two_amt, 8, 7, 38
-  bndx_claim_two_amt = replace(bndx_claim_two_amt, " ", "")
+EMReadScreen bndx_claim_two_amount, 8, 7, 38
+  bndx_claim_two_amt = replace(bndx_claim_two_amount, " ", "")
   IF bndx_claim_two_amt <> "" THEN bndx_claim_two_amt = INT(bndx_claim_two_amt)
 
 EMReadScreen bndx_claim_three_number, 14, 5, 64
   bndx_claim_three_number = replace(bndx_claim_three_number, " ", "")
-EMReadScreen bndx_claim_three_amt, 8, 7, 64
-  bndx_claim_three_amt = replace(bndx_claim_three_amt, " ", "")
+EMReadScreen bndx_claim_three_amount, 8, 7, 64
+  bndx_claim_three_amt = replace(bndx_claim_three_amount, " ", "")
   IF bndx_claim_three_amt <> "" THEN bndx_claim_three_amt = INT(bndx_claim_three_amt)
 
 '========== Goes back to STAT/PROG to determine which programs are active. ==========
@@ -129,14 +123,14 @@ IF number_of_unea_panels = "1" THEN
 		EMReadScreen unea_prospective_amt, 8, 13, 68
 		unea_prospective_amt = replace(unea_prospective_amt, " ", "")
 		unea_prospective_amount = INT(unea_prospective_amt)
-		IF ((unea_prospective_amount - bndx_claim_one_amt > county_bndx_variance_threshold) OR (bndx_claim_one_amt - unea_prospective_amount > county_bndx_variance_threshold)) THEN error_message = error_message & chr(13) & "The claim amounts are significantly different."
+		IF unea_prospective_amount <> bndx_claim_one_amt THEN error_message = error_message & chr(13) & "The claim amounts are significantly different."
 		IF fs_status = "ACTV" or fs_status = "PEND" THEN
 			EMWriteScreen "X", 10, 26
 			transmit
 			EMReadScreen unea_pic_amt, 8, 18, 56
 			unea_pic_amt = replace(unea_pic_amt, " ", "")
 			unea_pic_amount = INT(unea_pic_amt)
-			IF ((unea_pic_amount - bndx_claim_one_amt > county_bndx_variance_threshold) OR (bndx_claim_one_amt - unea_pic_amount > county_bndx_variance_threshold)) THEN error_message = error_message & chr(13) & "The claim amount on the PIC is significantly different from BNDX."
+			IF unea_pic_amount <> bndx_claim_one_amt THEN error_message = error_message & chr(13) & "The claim amount on the PIC is significantly different from BNDX."
 			PF3
 		END IF
 		IF hc_status = "ACTV" or hc_status = "PEND" THEN
@@ -145,7 +139,7 @@ IF number_of_unea_panels = "1" THEN
 			EMReadScreen unea_hc_inc_amt, 8, 9, 65
 			unea_hc_inc_amt = replace(unea_hc_inc_amt, " ", "")
 			unea_hc_inc_amount = INT(unea_hc_inc_amt)
-			IF ((unea_hc_inc_amount - bndx_claim_one_amt > county_bndx_variance_threshold) OR (bndx_claim_one_amt - unea_hc_inc_amount > county_bndx_variance_threshold)) THEN error_message = error_message & chr(13) & "The claim amount on the HC Income Estimator is significantly different from BNDX."
+			IF unea_hc_inc_amount <> bndx_claim_one_amt THEN error_message = error_message & chr(13) & "The claim amount on the HC Income Estimator is significantly different from BNDX."
 			PF3
 		END IF
 	ELSE
@@ -208,14 +202,14 @@ ELSEIF CINT(number_of_unea_panels) > 1 THEN
 				EMReadScreen unea_prospective_amt, 8, 13, 68
 				unea_prospective_amt = replace(unea_prospective_amt, " ", "")
 				unea_prospective_amount = INT(unea_prospective_amt)
-				IF ((unea_prospective_amount - bndx_claim_one_amt > county_bndx_variance_threshold) OR (bndx_claim_one_amt - unea_prospective_amount > county_bndx_variance_threshold)) THEN error_message = error_message & chr(13) & "The amounts for claim 1 are significantly different."
+				IF unea_prospective_amount <> bndx_claim_one_amt THEN error_message = error_message & chr(13) & "The amounts for Claim 1 are significantly different."
 				IF fs_status = "ACTV" or fs_status = "PEND" THEN
 					EMWriteScreen "X", 10, 26
 					transmit
 					EMReadScreen unea_pic_amt, 8, 18, 56
 					unea_pic_amt = replace(unea_pic_amt, " ", "")
 					unea_pic_amount = INT(unea_pic_amt)
-					IF ((unea_pic_amount - bndx_claim_one_amt > county_bndx_variance_threshold) OR (bndx_claim_one_amt - unea_pic_amount > county_bndx_variance_threshold)) THEN error_message = error_message & chr(13) & "The amount on the PIC does not match the BNDX message for claim 1."
+					IF unea_pic_amount <> bndx_claim_one_amt THEN error_message = error_message & chr(13) & "The amount on the PIC does not match the BNDX message for Claim 1."
 					PF3
 				END IF
 				IF hc_status = "ACTV" or hc_status = "PEND" THEN
@@ -224,21 +218,21 @@ ELSEIF CINT(number_of_unea_panels) > 1 THEN
 					EMReadScreen unea_hc_inc_amt, 8, 9, 65
 					unea_hc_inc_amt = replace(unea_hc_inc_amt, " ", "")
 					unea_hc_inc_amount = INT(unea_hc_inc_amt)
-					IF ((unea_hc_inc_amount - bndx_claim_one_amt > county_bndx_variance_threshold) OR (bndx_claim_one_amt - unea_hc_inc_amount > county_bndx_variance_threshold)) THEN error_message = error_message & chr(13) & "The claim amount on the HC Income Estimator is significantly different from BNDX."
+					IF unea_hc_inc_amount <> bndx_claim_one_amt THEN error_message = error_message & chr(13) & "The claim amount on the HC Income Estimator is significantly different from BNDX for Claim 1."
 					PF3
 				END IF
 			ELSEIF bndx_claim_two_number = unea_claim_number THEN
 				EMReadScreen unea_prospective_amt, 8, 13, 68
 				unea_prospective_amt = replace(unea_prospective_amt, " ", "")
 				unea_prospective_amount = INT(unea_prospective_amt)
-				IF ((unea_prospective_amount - bndx_claim_two_amt > county_bndx_variance_threshold) OR (bndx_claim_two_amt - unea_prospective_amount > county_bndx_variance_threshold)) THEN error_message = error_message & chr(13) & "The claim amount for claim 2 is significantly different from BNDX."
+				IF unea_prospective_amount <> bndx_claim_two_amt THEN error_message = error_message & chr(13) & "The claim amount for Claim 2 is significantly different from BNDX."
 				IF fs_status = "ACTV" or fs_status = "PEND" THEN
 					EMWriteScreen "X", 10, 26
 					transmit
 					EMReadScreen unea_pic_amt, 8, 18, 56
 					unea_pic_amt = replace(unea_pic_amt, " ", "")
 					unea_pic_amount = INT(unea_pic_amt)
-					IF ((unea_pic_amount - bndx_claim_two_amt > county_bndx_variance_threshold) OR (bndx_claim_two_amt - unea_pic_amount > county_bndx_variance_threshold)) THEN error_message = error_message & chr(13) & "The amount on the PIC from claim 2 does not match the BNDX message."
+					IF unea_pic_amount <> bndx_claim_two_amt THEN error_message = error_message & chr(13) & "The amount on the PIC from Claim 2 does not match the BNDX message."
 					PF3
 				END IF
 				IF hc_status = "ACTV" or hc_status = "PEND" THEN
@@ -247,21 +241,21 @@ ELSEIF CINT(number_of_unea_panels) > 1 THEN
 					EMReadScreen unea_hc_inc_amt, 8, 9, 65
 					unea_hc_inc_amt = replace(unea_hc_inc_amt, " ", "")
 					unea_hc_inc_amount = INT(unea_hc_inc_amt)
-					IF ((unea_hc_inc_amount - bndx_claim_two_amt > county_bndx_variance_threshold) OR (bndx_claim_two_amt - unea_hc_inc_amount > county_bndx_variance_threshold)) THEN error_message = error_message & chr(13) & "The claim amount on claim 2 in the HC Income Estimator is significantly different from BNDX."
+					IF unea_hc_inc_amount <> bndx_claim_two_amt THEN error_message = error_message & chr(13) & "The claim amount on Claim 2 in the HC Income Estimator is significantly different from BNDX."
 					PF3
 				END IF
 			ELSEIF bndx_claim_three_number = unea_claim_number THEN
 				EMReadScreen unea_prospective_amt, 8, 13, 68
 				unea_prospective_amt = replace(unea_prospective_amt, " ", "")
 				unea_prospective_amount = INT(unea_prospective_amt)
-				IF ((unea_prospective_amount - bndx_claim_three_amt > county_bndx_variance_threshold) OR (bndx_claim_three_amt - unea_prospective_amount > county_bndx_variance_threshold)) THEN error_message = error_message & chr(13) & "The claim amount for claim 3 is significantly different from BNDX."
+				IF unea_prospective_amount <> bndx_claim_three_amt THEN error_message = error_message & chr(13) & "The claim amount for Claim 3 is significantly different from BNDX."
 				IF fs_status = "ACTV" or fs_status = "PEND" THEN
 					EMWriteScreen "X", 10, 26
 					transmit
 					EMReadScreen unea_pic_amt, 8, 18, 56
 					unea_pic_amt = replace(unea_pic_amt, " ", "")
 					unea_pic_amount = INT(unea_pic_amt)
-					IF ((unea_pic_amount - bndx_claim_three_amt > county_bndx_variance_threshold) OR (bndx_claim_three_amt - unea_pic_amount > county_bndx_variance_threshold)) THEN error_message = error_message & chr(13) & "The amount on the PIC from claim 3 does not match the BNDX message."
+					IF unea_pic_amount <> bndx_claim_three_amt THEN error_message = error_message & chr(13) & "The amount on the PIC from Claim 3 does not match the BNDX message."
 					PF3
 				END IF
 				IF hc_status = "ACTV" or hc_status = "PEND" THEN
@@ -270,7 +264,7 @@ ELSEIF CINT(number_of_unea_panels) > 1 THEN
 					EMReadScreen unea_hc_inc_amt, 8, 9, 65
 					unea_hc_inc_amt = replace(unea_hc_inc_amt, " ", "")
 					unea_hc_inc_amount = INT(unea_hc_inc_amt)
-					IF ((unea_hc_inc_amount - bndx_claim_three_amt > county_bndx_variance_threshold) OR (bndx_claim_three_amt - unea_hc_inc_amount > county_bndx_variance_threshold)) THEN error_message = error_message & chr(13) & "The claim amount on claim 3 in the HC Income Estimator is significantly different from BNDX."
+					IF unea_hc_inc_amount <> bndx_claim_three_amt THEN error_message = error_message & chr(13) & "The claim amount on Claim 3 in the HC Income Estimator is significantly different from BNDX."
 					PF3
 				END IF
 			END IF
@@ -294,9 +288,9 @@ transmit
 
 '========== The bit about the MSGBox is used only as a safeguard for Beta Testing.
 IF error_message = "" THEN 
-	compare_message = "BNDX Claim 1 Amt: " & (bndx_claim_one_amt)
-	IF bndx_claim_two_amt <> "" THEN compare_message = compare_message & chr(13) & "BNDX Claim 2 Amt: " & (bndx_claim_two_amt)
-	IF bndx_claim_three_amt <> "" THEN compare_message = compare_message & chr(13) & "BNDX Claim 3 Amt: " & (bndx_claim_three_amt)
+	compare_message = "BNDX Claim 1 Amt: " & (FormatCurrency(bndx_claim_one_amount))
+	IF bndx_claim_two_amt <> "" THEN compare_message = compare_message & chr(13) & "BNDX Claim 2 Amt: " & FormatCurrency(bndx_claim_two_amount)
+	IF bndx_claim_three_amt <> "" THEN compare_message = compare_message & chr(13) & "BNDX Claim 3 Amt: " & FormatCurrency(bndx_claim_three_amount)
 	IF total_unea <> "" THEN
 		uneaPROS = left(total_unea, 8)
 		compare_message = compare_message & chr(13) & "UNEA Prospected Amt: " & FormatCurrency(uneaPROS)
@@ -341,9 +335,9 @@ IF error_message = "" THEN
 		END IF
 ELSE
 	MSGBox error_message & chr(13) & "Review case and request RSDI information if necessary."
-	compare_message = "BNDX Claim 1 Amt: " & (bndx_claim_one_amt)
-	IF bndx_claim_two_amt <> "" THEN compare_message = compare_message & chr(13) & "BNDX Claim 2 Amt: " & (bndx_claim_two_amt)
-	IF bndx_claim_three_amt <> "" THEN compare_message = compare_message & chr(13) & "BNDX Claim 3 Amt: " & (bndx_claim_three_amt)
+	compare_message = "BNDX Claim 1 Amt: " & FormatCurrency(bndx_claim_one_amount)
+	IF bndx_claim_two_amt <> "" THEN compare_message = compare_message & chr(13) & "BNDX Claim 2 Amt: " & FormatCurrency(bndx_claim_two_amount)
+	IF bndx_claim_three_amt <> "" THEN compare_message = compare_message & chr(13) & "BNDX Claim 3 Amt: " & FormatCurrency(bndx_claim_three_amount)
 	IF total_unea <> "" THEN
 		uneaPROS = left(total_unea, 8)
 		compare_message = compare_message & chr(13) & "UNEA Prospected Amt: " & FormatCurrency(uneaPROS)
