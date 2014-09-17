@@ -174,16 +174,10 @@ ELSEIF CINT(number_of_unea_panels) > 1 THEN
 				IF fs_status = "ACTV" OR fs_status = "PEND" THEN
 					EMWriteScreen "X", 10, 26
 					transmit
-					EMReadScreen unea_pic_anticipated, 8, 8, 66
-					unea_pic_anticipated = replace(unea_pic_anticipated, " ", "0")
-					IF unea_pic_anticipated = "________" THEN
-						EMReadScreen unea_pic_received, 8, 9, 25
-						unea_pic_received = replace(unea_pic_received, " ", "0")
-						uneaPIC = unea_pic_received
-					ELSE
-						uneaPIC = unea_pic_anticipated
-					END IF
+					EMReadScreen uneaPIC, 8, 18, 56
+					uneaPIC = replace(uneaPIC, " ", "0")
 					total_unea = total_unea & uneaPIC
+					transmit
 				END IF
 			END IF
 		transmit
