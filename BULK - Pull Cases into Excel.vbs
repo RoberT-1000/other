@@ -2,13 +2,6 @@
 name_of_script = "BULK - pull cases into Excel-revised"
 start_time = timer
 
-'LOADING COUNTY SPECIFIC INFORMATION
-Set run_another_script_fso = CreateObject("Scripting.FileSystemObject")
-Set fso_command = run_another_script_fso.OpenTextFile("Q:\Blue Zone Scripts\County beta staging\FUNCTIONS FILE.vbs")
-text_from_the_other_script = fso_command.ReadAll
-fso_command.Close
-Execute text_from_the_other_script
-
 'LOADING ROUTINE FUNCTIONS FROM GITHUB REPOSITORY---------------------------------------------------------------------------
 url = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/master/MASTER%20FUNCTIONS%20LIBRARY.vbs"
 
@@ -267,44 +260,74 @@ FUNCTION navigate_to_MAXIS(maxis_mode)
 END FUNCTION
 
 'DIALOGS----------------------------------------------------------------------------------------------------
-BeginDialog pull_cases_into_excel_dialog, 0, 0, 416, 185, "Pull cases into Excel dialog"
-  CheckBox 15, 20, 55, 10, "PREG exists?", preg_check
-  CheckBox 15, 35, 90, 10, "All HH membs 19+?", all_HH_membs_19_plus_check
-  CheckBox 15, 50, 90, 10, "Number of HH membs?", number_of_HH_membs_check
-  CheckBox 15, 65, 90, 10, "ABAWD code", ABAWD_code_check
-  CheckBox 15, 80, 80, 10, "PDED/Rep-Payee", pded_check
-  CheckBox 15, 95, 95, 10, "MAGI%", magi_pct_check
-  CheckBox 15, 110, 85, 10, "FS and MFIP Review", FS_MF_review_check
-  CheckBox 15, 125, 90, 10, "SNAP PND2 Check", pnd2_check
-  CheckBox 15, 140, 95, 10, "Check MA-EPD for Pt B", maepd_check
-  CheckBox 15, 155, 70, 10, "All cases", all_cases_check
+BeginDialog pull_cases_into_excel_dialog, 0, 0, 416, 180, "Pull cases into Excel dialog"
+  CheckBox 10, 20, 55, 10, "PREG exists?", preg_check
+  CheckBox 10, 35, 90, 10, "All HH membs 19+?", all_HH_membs_19_plus_check
+  CheckBox 10, 50, 90, 10, "Number of HH membs?", number_of_HH_membs_check
+  CheckBox 10, 65, 90, 10, "ABAWD code", ABAWD_code_check
+  CheckBox 10, 80, 80, 10, "PDED/Rep-Payee", pded_check
+  CheckBox 10, 95, 95, 10, "MAGI%", magi_pct_check
+  CheckBox 10, 110, 85, 10, "FS and MFIP Review", FS_MF_review_check
+  CheckBox 10, 125, 95, 10, "Homeless Clients", homeless_check
+  CheckBox 10, 140, 105, 10, "MAEPD/Part B Reimbursable", maepd_check
+  CheckBox 10, 155, 70, 10, "All cases", all_cases_check
   DropListBox 180, 15, 95, 10, "REPT/PND2"+chr(9)+"REPT/ACTV", screen_to_use
   EditBox 190, 30, 90, 15, x_number
   CheckBox 125, 50, 295, 15, "Check here if you're running this for all staff (WARNING: this could take several hours)", all_workers_check
   ButtonGroup ButtonPressed
     OkButton 365, 10, 50, 15
     CancelButton 365, 30, 50, 15
-  GroupBox 10, 5, 110, 165, "Additional items to log"
+  GroupBox 5, 5, 115, 165, "Additional items to log"
   Text 125, 15, 50, 10, "Screen to use:"
   Text 125, 35, 60, 10, "Worker to check:"
 EndDialog
 
+BeginDialog gen_worker_dialog, 0, 0, 291, 110, "Pull cases into Excel dialog"
+  CheckBox 10, 20, 55, 10, "PREG exists?", preg_check
+  CheckBox 10, 35, 90, 10, "ABAWD code", ABAWD_code_check
+  CheckBox 10, 50, 80, 10, "PDED/Rep-Payee", pded_check
+  CheckBox 10, 65, 85, 10, "Homeless Clients", homeless_check
+  CheckBox 10, 80, 105, 10, "MA-EPD/Part B Reimbursable", maepd_check
+  DropListBox 185, 15, 95, 10, "REPT/PND2"+chr(9)+"REPT/ACTV", screen_to_use
+  ButtonGroup ButtonPressed
+    OkButton 175, 50, 50, 15
+    CancelButton 230, 50, 50, 15
+  Text 130, 15, 50, 10, "Screen to use:"
+  GroupBox 5, 5, 120, 90, "Additional items to log"
+EndDialog
+
 
 'THE SCRIPT----------------------------------------------------------------------------------------------------
+'Connecting to BlueZone
+EMConnect ""
+
+'Checking for MAXIS
+MAXIS_check_function
 
 'Grabbing user ID to validate user of script. Only some users are allowed to use this script.
 Set objNet = CreateObject("WScript.NetWork") 
 user_ID_for_validation = ucase(objNet.UserName)
 
 'Validating user ID
-If user_ID_for_validation <> "VKCARY" and user_ID_for_validation <> "RAKALB" and user_ID_for_validation <> "CDPOTTER" and user_ID_for_validation <> "MLDIETZ" AND user_ID_for_validation <> "PHBROCKM" AND user_ID_for_validation <> "JGLETH" AND user_ID_for_validation <> "TMMIELKE" AND user_ID_for_validation <> "VLANDERS" AND user_ID_for_validation <> "SLCARDA" AND user_ID_for_validation <> "IGFERRIS" AND user_ID_for_validation <> "CMCOX" THEN script_end_procedure("User " & user_ID_for_validation & " is not authorized to use this script. To be added to the allowed users' group, email the script administrator, and include the user ID indicated. Thank you!")
+If user_ID_for_validation = "VKCARY" OR _
+	user_ID_for_validation = "RAKALB" OR _
+	user_ID_for_validation = "CDPOTTER" OR _ 
+	user_ID_for_validation = "MLDIETZ" OR _ 
+	user_ID_for_validation = "PHBROCKM" OR _
+	user_ID_for_validation = "JGLETH" OR _
+	user_ID_for_validation = "TMMIELKE" OR _ 
+	user_ID_for_validation = "VLANDERS" OR _ 
+	user_ID_for_validation = "SLCARDA" OR _ 
+	user_ID_for_validation = "IGFERRIS" OR _ 
+	user_ID_for_validation = "CMCOX" THEN 
+	Dialog pull_cases_into_excel_dialog
+		If buttonpressed = 0 then stopscript
+ELSE
+	DIALOG gen_worker_dialog
+		IF ButtonPressed = 0 THEN stopscript
+END IF
 
-'Connecting to BlueZone
-EMConnect ""
-
-'Dialog asks what stats are being pulled
-Dialog pull_cases_into_excel_dialog
-If buttonpressed = 0 then stopscript
+IF x_number = "" THEN CALL find_variable("User: X102", x_number, 3)
 
 'Adjusting name of script variable for usage stats according to what was done. So, if ACTV was used instead of PND2, it'll indicate that on the script (and thus allow accurate measurement of time savings).
 If screen_to_use = "REPT/PND2" then
@@ -315,10 +338,6 @@ ElseIf screen_to_use = "REPT/ACTV" then
 	If all_workers_check = 1 then name_of_script = "BULK - pull cases into Excel (ACTV all cases)"
 End if
 
-'Checking for MAXIS
-transmit
-EMReadScreen MAXIS_check, 5, 1, 39
-If MAXIS_check <> "MAXIS" and MAXIS_check <> "AXIS " then script_end_procedure("You appear to be locked out of MAXIS")
 
 'Opening the Excel file
 Set objExcel = CreateObject("Excel.Application")
@@ -328,7 +347,7 @@ objExcel.DisplayAlerts = True
 
 
 'Setting the first 3 col as worker, case number, and name
-ObjExcel.Cells(1, 1).Value = "X102"
+ObjExcel.Cells(1, 1).Value = "X Number"
 ObjExcel.Cells(1, 2).Value = "CASE NUMBER"
 ObjExcel.Cells(1, 3).Value = "NAME"
 
@@ -380,17 +399,15 @@ IF FS_MF_review_check = 1 THEN
 	MFIP_col = col_to_use
 	col_to_use = col_to_use + 1
 END IF
-IF pnd2_check = 1 THEN
-	ObjExcel.Cells(1, col_to_use).Value = "SNAP Days Pending"
-	pnd2_col = col_to_use
+IF homeless_check = 1 THEN
+	objExcel.Cells(1, col_to_use).Value = "CL reporting homeless?"
+	homeless_col = col_to_use
 	col_to_use = col_to_use + 1
-	screen_to_use = "REPT/PND2"
 END IF
 IF maepd_check = 1 THEN
-	ObjExcel.Cells(1, col_to_use).Value = "ELIG FOR REIMBURSEMENT"
+	objExcel.Cells(1, col_to_use).Value = "MA-EPD & Part B Reimburseable"
 	maepd_col = col_to_use
 	col_to_use = col_to_use + 1
-	screen_to_use = "REPT/ACTV"
 END IF
 IF all_cases_check = 1 THEN
 	screen_to_use = "REPT/ACTV"
@@ -398,114 +415,92 @@ IF all_cases_check = 1 THEN
 END IF
 
 
+
 'Setting the variable for what's to come
 excel_row = 2
 
 'If all workers are selected, the script will open the worker list stored on the shared drive, and load all of the workers into an array. Otherwise it'll create a single-object "array" just for simplicity of code.
 IF magi_pct_check = 1 THEN
-	x102_array = "293" & " " & "692" & " " & "107" & " " & "B98" & " " & "SAC" & " " & "234" & " " & "30V" & " " & "757" & " " & "628" & " " & "4AF" & " " & "144" & " " & "880" & " " & "B83" & " " & "130" & " " & "769" & " " & "524" & " " & "132" & " " & "598" & " " & "752" & " " & "4SZ" & " " & "4SS" & " " & "B93" & " " & "950" & " " & "742" & " " & "112" & " " & "756" & " " & "TRP" & " " & "111" & " " & "EMP" & " " & "SKM" & " " & "268" & " " & "722" & " " & "B42" & " " & "4BL" & " " & "233" & " " & "122" & " " & "932" & " " & "894" & " " & "770" & " " & "976" & " " & "989" & " " & "949" & " " & "631" & " " & "978" & " " & "5A2" & " " & "104" & " " & "4SY" & " " & "GMZ"
-	x102_array = split(x102_array)
+	x_array = "293" & " " & "692" & " " & "107" & " " & "B98" & " " & "SAC" & " " & "234" & " " & "30V" & " " & "757" & " " & "628" & " " & "4AF" & " " & "144" & " " & "880" & " " & "B83" & " " & "130" & " " & "769" & " " & "524" & " " & "132" & " " & "598" & " " & "752" & " " & "4SZ" & " " & "4SS" & " " & "B93" & " " & "950" & " " & "742" & " " & "112" & " " & "756" & " " & "TRP" & " " & "111" & " " & "EMP" & " " & "SKM" & " " & "268" & " " & "722" & " " & "B42" & " " & "4BL" & " " & "233" & " " & "122" & " " & "932" & " " & "894" & " " & "770" & " " & "976" & " " & "989" & " " & "949" & " " & "631" & " " & "978" & " " & "5A2" & " " & "104" & " " & "4SY" & " " & "GMZ"
+	x_array = split(x_array)
 ELSE
 	If all_workers_check = 1 then
-		'Sets variable for worker list
-		worker_list_excel_row = 2
-		'Gets all x numbers in the county
-		CALL navigate_to_screen("REPT", "USER")
-		PF5
-		rept_user_row = 7
-		DO
-			EMReadScreen worker_number, 7, rept_user_row, 5
-			IF right(worker_number, 4) = worker_county_code_variable THEN x_array = x_array & left(worker_number, 3)
-			rept_user_row = rept_user_row + 1
-			IF rept_user_row = 19 THEN
-				PF8
-				rept_user_row = 7
-			END IF
-		LOOP UNTIL right(worker_number, 4) <> worker_county_code_variable
-		x_array = split(x_array)
+		CALL create_array_of_all_active_x_numbers_in_county(x_array, "02")
 	Else
-		x102_array = split(x_number, ", ")
+		IF len(x_number) > 3 THEN 
+			x_array = split(x_number, ", ")
+		ELSE		
+			x_array = split(x_number)
+		END IF
 	End if
 END IF
 
 For each worker in x_array
-IF worker <> "" THEN
-	case_number = ""	
-	'Getting to PND2, if PND2 is the selected option
-	If screen_to_use = "REPT/PND2" then
-		back_to_SELF
-		EMWriteScreen "REPT", 16, 43
-		EMWriteScreen "PND2", 21, 70
-		transmit
+'Getting to PND2, if PND2 is the selected option
+If screen_to_use = "REPT/PND2" then
+	Call navigate_to_screen("rept", "pnd2")
+	EMWriteScreen worker, 21, 13
+	transmit
 
-		MsgBox worker
-
-		EMWriteScreen worker, 21, 17
-		transmit
-
-		EMReadScreen worker_name, 30, 3, 11
-		MsgBox worker_name
-		'Grabbing each case number on screen
+	'Grabbing each case number on screen
+	Do
+		MAXIS_row = 7
 		Do
-			MAXIS_row = 7
-			Do
-				EMReadScreen case_number, 8, MAXIS_row, 5
-				case_number = replace(case_number, " ", "")
-				EMReadScreen client_name, 22, MAXIS_row, 16
-				'MsgBox ("Worker: " & worker & chr(13) & "Case Number: " & case_number & chr(13) & "Client Name: " & client_name)
-				IF case_number <> "" AND client_name <> "                      " THEN
-					EMReadScreen APPL_date, 8, MAXIS_row, 38
-					ObjExcel.Cells(excel_row, 1).Value = worker
-					ObjExcel.Cells(excel_row, 2).Value = case_number
-					ObjExcel.Cells(excel_row, 3).Value = client_name
-					ObjExcel.Cells(excel_row, 4).Value = replace(APPL_date, " ", "/")
-					IF pnd2_check = 1 THEN
-						EMReadScreen snap_pending, 1, maxis_row, 62
-						EMReadScreen days_pending, 3, maxis_row, 50
-						days_pending = replace(days_pending, " ", "")
-						days_pending = days_pending * 1
-						IF snap_pending <> "_" AND days_pending >= 30 THEN ObjExcel.Cells(excel_row, pnd2_col).Value = days_pending
-					END IF
-					excel_row = excel_row + 1
-				ELSEIF case_number = "" AND client_name = "                      " THEN
+			EMReadScreen case_number, 8, MAXIS_row, 5
+			If case_number = "        " then 
+				EMReadScreen additional_app, 14, maxis_row, 17
+				IF additional_app = "              " THEN
 					EXIT DO
+				ELSE
+					MAXIS_row = MAXIS_row + 1
 				END IF
+			ELSE
+				EMReadScreen client_name, 22, MAXIS_row, 16
+				EMReadScreen APPL_date, 8, MAXIS_row, 38
+				ObjExcel.Cells(excel_row, 1).Value = worker
+				ObjExcel.Cells(excel_row, 2).Value = case_number
+				ObjExcel.Cells(excel_row, 3).Value = client_name
+				ObjExcel.Cells(excel_row, 4).Value = replace(APPL_date, " ", "/")
 				MAXIS_row = MAXIS_row + 1
-			Loop until MAXIS_row = 19
-			PF8
-			EMReadScreen last_page_check, 21, 24, 2
-		Loop until last_page_check = "THIS IS THE LAST PAGE"
-	End if
+			END IF
+			excel_row = excel_row + 1
+		Loop until MAXIS_row = 19
+		PF8
+		EMReadScreen last_page_check, 21, 24, 2
+	Loop until last_page_check = "THIS IS THE LAST PAGE"
+End if
 
-	'Getting to ACTV, if ACTV is the selected option
-	If screen_to_use = "REPT/ACTV" then
-		Call navigate_to_screen("rept", "actv")
-		EMWriteScreen worker, 21, 17
+'Getting to ACTV, if ACTV is the selected option
+If screen_to_use = "REPT/ACTV" then
+	Call navigate_to_screen("rept", "actv")
+	IF worker <> "" THEN
+		EMWriteScreen worker, 21, 13
 		transmit
-		EMReadScreen user_id, 7, 21, 71
-		EMReadScreen check_worker, 7, 21, 13
-		IF user_id = check_worker THEN PF7
+	END IF
+	EMReadScreen user_id, 7, 21, 71
+	EMReadScreen check_worker, 7, 21, 13
+	IF user_id = check_worker THEN PF7
 
-		'Grabbing each case number on screen
+	'Grabbing each case number on screen
+	Do
+		MAXIS_row = 7
+		EMReadScreen last_page_check, 21, 24, 2
 		Do
-			MAXIS_row = 7
-			EMReadScreen last_page_check, 21, 24, 2
-			Do
-				EMReadScreen case_number, 8, MAXIS_row, 12
-				IF case_number = "        " THEN EXIT DO
-					EMReadScreen client_name, 21, MAXIS_row, 21
-					EMReadScreen next_REVW_date, 8, MAXIS_row, 42
-					ObjExcel.Cells(excel_row, 1).Value = worker
-					ObjExcel.Cells(excel_row, 2).Value = case_number
-					ObjExcel.Cells(excel_row, 3).Value = client_name
-					ObjExcel.Cells(excel_row, 4).Value = replace(next_REVW_date, " ", "/")
-				MAXIS_row = MAXIS_row + 1
-				excel_row = excel_row + 1
-			Loop until MAXIS_row = 19
-			PF8
-		Loop until last_page_check = "THIS IS THE LAST PAGE"
-	End if
-END IF
+			EMReadScreen case_number, 8, MAXIS_row, 12
+			If case_number = "        " then exit do
+			EMReadScreen client_name, 21, MAXIS_row, 21
+			EMReadScreen next_REVW_date, 8, MAXIS_row, 42
+			ObjExcel.Cells(excel_row, 1).Value = worker
+			ObjExcel.Cells(excel_row, 2).Value = case_number
+			ObjExcel.Cells(excel_row, 3).Value = client_name
+			ObjExcel.Cells(excel_row, 4).Value = replace(next_REVW_date, " ", "/")
+			MAXIS_row = MAXIS_row + 1
+			excel_row = excel_row + 1
+		Loop until MAXIS_row = 19
+		PF8
+	Loop until last_page_check = "THIS IS THE LAST PAGE"
+End if
+
 next
 
 'Resetting excel_row variable, now we need to start looking people up
@@ -554,14 +549,16 @@ Do
 
 	'Now pulling ABAWD info
 	If ABAWD_code_check = 1 then
+		ABAWD_status = "" 		'clearing variable
+		eats_group_members = ""		'clearing
+
 		call navigate_to_screen("STAT", "PROG")
-
 		ERRR_screen_check
-
-		EMReadScreen snap_status, 4, 10, 74
 		
+		EMReadScreen snap_status, 4, 10, 74
 		IF snap_status = "ACTV" OR snap_status = "PEND" THEN
 			call navigate_to_screen("STAT", "EATS")
+			ERRR_screen_check
 			EMReadScreen all_eat_together, 1, 4, 72
 			IF all_eat_together = "_" THEN
 				eats_group_members = "01" & " "
@@ -596,7 +593,8 @@ Do
 			eats_group_members = split(eats_group_members)
 
 			call navigate_to_screen("STAT", "WREG")
-
+			ERRR_screen_check
+	
 			FOR EACH person IN eats_group_members
 				EMWriteScreen person, 20, 76
 				transmit
@@ -604,10 +602,16 @@ Do
 				EMReadScreen ABAWD_status_code, 2, 13, 50
 				ABAWD_status = ABAWD_status & person & ": " & ABAWD_status_code & ","
 			NEXT
-				ObjExcel.Cells(excel_row, ABAWD_code_col).Value = ABAWD_status
-				ABAWD_status = "" 		'clearing variable
-				eats_group_members = ""		'clearing
+	
+			ObjExcel.Cells(excel_row, ABAWD_code_col).Value = ABAWD_status
+
 		End if
+
+		IF objExcel.Cells(excel_row, ABAWD_code_col).Value = "" THEN 
+			SET objRange = objExcel.Cells(excel_row, 1).EntireRow
+			objRange.Delete
+			excel_row = excel_row - 1
+		End IF
 	End if
 
 	IF pded_check = 1 THEN
@@ -795,6 +799,7 @@ Do
 					DO
 						IF mfpr_row = 18 THEN 
 							PF8
+							EMReadScreen no_more_members, 15, 24, 5
 							mfpr_row = 7
 						END IF
 						EMReadScreen is_counted, 7, mfpr_row, 41
@@ -804,7 +809,7 @@ Do
 							mfip_group = mfip_group & ref_num & " "
 						END IF
 						mfpr_row = mfpr_row + 1
-					LOOP UNTIL is_counted = ""
+					LOOP UNTIL is_counted = "" OR no_more_members = "NO MORE MEMBERS"
 					mfip_group = trim(mfip_group)
 					mfip_group = split(mfip_group)
 	
@@ -820,6 +825,20 @@ Do
 			objRange.Delete
 			excel_row = excel_row - 1
 		End IF
+	END IF
+
+	IF homeless_check = 1 THEN
+		CALL navigate_to_screen("STAT", "ADDR")
+		ERRR_screen_check
+		EMReadScreen addr_line, 16, 6, 43
+		EMReadScreen homeless_yn, 1, 10, 43
+		IF homeless_yn = "Y" OR addr_line = "GENERAL DELIVERY" THEN 
+			objExcel.Cells(excel_row, homeless_col).Value = "HOMELESS"
+		ELSEIF homeless_yn <> "Y" AND addr_line <> "GENERAL DELIVERY" THEN
+			SET objRange = objExcel.Cells(excel_row, 1).EntireRow
+			objRange.Delete
+			excel_row = excel_row - 1
+		END IF			
 	END IF
 
 	IF MAEPD_check = 1 THEN
@@ -892,7 +911,6 @@ Do
 							EMReadScreen part_b_begin02, 8, 14, 4
 								part_b_begin02 = trim(part_b_begin02)
 							EMReadScreen part_b_end02, 8, 14, 15
-	'-------------THIS IS WHERE I STOPPED----------------------
 							
 							IF (part_b_begin01 <> "" AND part_b_end01 = "99/99/99") THEN		
 								EMWriteScreen "RBYB", 1, 8
@@ -941,9 +959,7 @@ Do
 	END IF
 
 	excel_row = excel_row + 1
-
 Loop until case_number = ""
-
 
 IF magi_pct_check = 1 THEN
 	objExcel.Cells(excel_row + 2, magi_col - 1).Value = "Pct MAGI"
@@ -951,4 +967,4 @@ IF magi_pct_check = 1 THEN
 END IF
 
 'Logging usage stats
-script_end_procedure("")
+script_end_procedure("DONE!!")
