@@ -327,7 +327,7 @@ ELSE
 		IF ButtonPressed = 0 THEN stopscript
 END IF
 
-IF x_number = "" THEN CALL find_variable("User: X102", x_number, 3)
+IF x_number = "" THEN CALL find_variable("User: ", x_number, 7)
 
 'Adjusting name of script variable for usage stats according to what was done. So, if ACTV was used instead of PND2, it'll indicate that on the script (and thus allow accurate measurement of time savings).
 If screen_to_use = "REPT/PND2" then
