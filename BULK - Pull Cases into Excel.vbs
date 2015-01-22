@@ -405,7 +405,7 @@ IF homeless_check = 1 THEN
 	col_to_use = col_to_use + 1
 END IF
 IF maepd_check = 1 THEN
-	objExcel.Cells(1, col_to_use).Value = "MA-EPD & Part B Reimburseable"
+	objExcel.Cells(1, col_to_use).Value = "MA-EPD & Part B Reimbursable"
 	maepd_col = col_to_use
 	col_to_use = col_to_use + 1
 END IF
