@@ -25,37 +25,45 @@ ELSE														'Error message, tells user to try to reach github.com, otherwi
 END IF
 
 
-FUNCTION create_INWD_variable(inwd_variable)
-	DIM inwd_array(3, 13)
-	number_of_employers = 0
+FUNCTION create_INWD_array
+		'Sets current position of first employer
+	employer_array_position = 0
+		'Navigate to screen (I assume... Robert you will have to document here)
 	CALL navigate_to_PRISM_screen("INWD")
 	CALL go_to("B", 3, 29)
 	row = 7
 	DO
 		DO
+			'Checks to see if you are at the end of the data
 			EMReadScreen end_of_data, 11, 24, 2
+			'Checks to see if your screen shows an active Job
 			EMReadScreen job_status, 3, row, 2
 			IF job_status = "ACT" THEN
-				number_of_employers = number_of_employers + 1
-'				ReDim inwd_array(number_of_employers, 13)
+					'This now only advances the array when it actually gets valid data
+				ReDim inwd_array(employer_array_position, 12)
+					
 				EMSetCursor row, 2
 				transmit
+					'Filling the variables on INWD array for current job
+				'(Ubound(inwd_array,1)) sets the position equal to the current row in the array
+				' Array columns start at 0. So 13 values is 0 through 12
+				inwd_array((Ubound(inwd_array,1)),0)  = read_INWD_employer_name
+				inwd_array((Ubound(inwd_array,1)),1)  = read_INWD_mo_acc_basic_support
+				inwd_array((Ubound(inwd_array,1)),2)  = read_INWD_mo_acc_spousal_maint
+				inwd_array((Ubound(inwd_array,1)),3)  = read_INWD_mo_acc_child_care
+				inwd_array((Ubound(inwd_array,1)),4)  = read_INWD_mo_acc_med_support
+				inwd_array((Ubound(inwd_array,1)),5)  = read_INWD_mo_acc_othr_support
+				inwd_array((Ubound(inwd_array,1)),6)  = read_INWD_nonmo_acc_basic_support
+				inwd_array((Ubound(inwd_array,1)),7)  = read_INWD_nonmo_acc_spousal_maint
+				inwd_array((Ubound(inwd_array,1)),8)  = read_INWD_nonmo_acc_child_care
+				inwd_array((Ubound(inwd_array,1)),9)  = read_INWD_nonmo_acc_med_support
+				inwd_array((Ubound(inwd_array,1)),10) = read_INWD_nonmo_acc_othr_support
+				inwd_array((Ubound(inwd_array,1)),11) = read_INWD_additional_20pct
+				inwd_array((Ubound(inwd_array,1)),12) = read_INWD_ttl_iw_amt
+					
+					'Advance the employer array counter one position
+				employer_array_position = employer_array_position + 1
 				
-				'Filling the variables on INWD
-				CALL read_INWD_employer_name(inwd_array(number_of_employers, 1))
-				CALL read_INWD_mo_acc_basic_support(inwd_array(number_of_employers, 2))
-				CALL read_INWD_mo_acc_spousal_maint(inwd_array(number_of_employers, 3))
-				CALL read_INWD_mo_acc_child_care(inwd_array(number_of_employers, 4))
-				CALL read_INWD_mo_acc_med_support(inwd_array(number_of_employers, 5))
-				CALL read_INWD_mo_acc_othr_support(inwd_array(number_of_employers, 6))
-				CALL read_INWD_nonmo_acc_basic_support(inwd_array(number_of_employers, 7))
-				CALL read_INWD_nonmo_acc_spousal_maint(inwd_array(number_of_employers, 8))
-				CALL read_INWD_nonmo_acc_child_care(inwd_array(number_of_employers, 9))
-				CALL read_INWD_nonmo_acc_med_support(inwd_array(number_of_employers, 10))
-				CALL read_INWD_nonmo_acc_othr_support(inwd_array(number_of_employers, 11))
-				CALL read_INWD_additional_20pct(inwd_array(number_of_employers, 12))
-				CALL read_INWD_ttl_iw_amt(inwd_array(number_of_employers, 13))
-
 				CALL go_to("B", 3, 29)
 			END IF
 			row = row + 1
@@ -67,82 +75,95 @@ FUNCTION create_INWD_variable(inwd_variable)
 END FUNCTION
 
 '----INWD----
-FUNCTION read_INWD_employer_name(employer_name)
+FUNCTION read_INWD_employer_name
 	EMReadScreen employer_name, 30, 8, 7
 	employer_name = trim(employer_name)
-	IF employer_name = "" THEN employer_name = "EMPLOYER NOT FOUND"
+	If employer_name <> "" Then read_INWD_employer_name = employer_name
+	IF employer_name =  "" Then read_INWD_employer_name = "EMPLOYER NOT FOUND"
 END FUNCTION
 
-FUNCTION read_INWD_mo_acc_basic_support(moacc_basic_support)
+FUNCTION read_INWD_mo_acc_basic_support
 	EMReadScreen moacc_basic_support, 14, 15, 17
 	moacc_basic_support = trim(moacc_basic_support)
-	IF moacc_basic_support = "" THEN moacc_basic_support = "0.00"
+	IF moacc_basic_support <> "" THEN read_INWD_mo_acc_basic_support = moacc_basic_support
+	IF moacc_basic_support =  "" THEN read_INWD_mo_acc_basic_support = "0.00"
 END FUNCTION
 
-FUNCTION read_INWD_mo_acc_spousal_maint(moacc_spou_main)
+FUNCTION read_INWD_mo_acc_spousal_maint
 	EMReadScreen moacc_spou_main, 14, 16, 17
 	moacc_spou_main = trim(moacc_spou_main)
-	IF moacc_spou_main = "" THEN moacc_spou_main = "0.00"
+	IF moacc_spou_main <> "" THEN read_INWD_mo_acc_spousal_maint = moacc_spou_main
+	IF moacc_spou_main =  "" THEN read_INWD_mo_acc_spousal_maint = "0.00"
 END FUNCTION
 
-FUNCTION read_INWD_mo_acc_child_care(moacc_child_care)
+FUNCTION read_INWD_mo_acc_child_care
 	EMReadScreen moacc_child_care, 14, 17, 17
 	moacc_child_care = trim(moacc_child_care)
-	IF moacc_child_care = "" THEN moacc_child_care = "0.00"
+	IF moacc_child_care <> "" THEN read_INWD_mo_acc_child_care = moacc_child_care
+	IF moacc_child_care =  "" THEN read_INWD_mo_acc_child_care = "0.00"
 END FUNCTION
 
-FUNCTION read_INWD_mo_acc_med_support(moacc_med_support)
+FUNCTION read_INWD_mo_acc_med_support
 	EMReadScreen moacc_med_support, 14, 18, 17
 	moacc_med_support = trim(moacc_med_support)
-	IF moacc_med_support = "" THEN moacc_med_support = "0.00"
+	IF moacc_med_support <> "" THEN read_INWD_mo_acc_med_support = moacc_med_support
+	IF moacc_med_support =  "" THEN read_INWD_mo_acc_med_support = "0.00"
 END FUNCTION
 
-FUNCTION read_INWD_mo_acc_othr_support(moacc_othr_support)
+FUNCTION read_INWD_mo_acc_othr_support
 	EMReadScreen moacc_othr_support, 14, 19, 17
 	moacc_othr_support = trim(moacc_othr_support)
-	IF moacc_othr_support = "" THEN moacc_othr_support = "0.00"
+	IF moacc_othr_support <> "" THEN read_INWD_mo_acc_othr_support = moacc_othr_support
+	IF moacc_othr_support =  "" THEN read_INWD_mo_acc_othr_support = "0.00"
 END FUNCTION
 
-FUNCTION read_INWD_nonmo_acc_basic_support(nonmoacc_basic_support)
+FUNCTION read_INWD_nonmo_acc_basic_support
 	EMReadScreen nonmoacc_basic_support, 15, 15, 32
 	nonmoacc_basic_support = trim(nonmoacc_basic_support)
-	IF nonmoacc_basic_support = "" THEN nonmoacc_basic_support = "0.00"
+	IF nonmoacc_basic_support <> "" THEN read_INWD_nonmo_acc_basic_support = nonmoacc_basic_support
+	IF nonmoacc_basic_support =  "" THEN read_INWD_nonmo_acc_basic_support = "0.00"
 END FUNCTION
 
-FUNCTION read_INWD_nonmo_acc_spousal_maint(nonmoacc_spou_main)
+FUNCTION read_INWD_nonmo_acc_spousal_maint
 	EMReadScreen nonmoacc_spou_main, 15, 16, 32
 	nonmoacc_spou_main = trim(nonmoacc_spou_main)
-	IF nonmoacc_spou_main = "" THEN nonmoacc_spou_main = "0.00"
+	IF nonmoacc_spou_main <> "" THEN read_INWD_nonmo_acc_spousal_maint = nonmoacc_spou_main
+	IF nonmoacc_spou_main =  "" THEN read_INWD_nonmo_acc_spousal_maint = "0.00"
 END FUNCTION
 
-FUNCTION read_INWD_nonmo_acc_child_care(nonmoacc_child_care)
+FUNCTION read_INWD_nonmo_acc_child_care
 	EMReadScreen nonmoacc_child_care, 15, 17, 32
 	nonmoacc_child_care = trim(nonmoacc_child_care)
-	IF nonmoacc_child_care = "" THEN nonmoacc_child_care = "0.00"
+	IF nonmoacc_child_care <> "" THEN read_INWD_nonmo_acc_child_care = nonmoacc_child_care
+	IF nonmoacc_child_care =  "" THEN read_INWD_nonmo_acc_child_care = "0.00"
 END FUNCTION
 
-FUNCTION read_INWD_nonmo_acc_med_support(nonmoacc_med_support)
+FUNCTION read_INWD_nonmo_acc_med_support
 	EMReadScreen nonmoacc_med_support, 15, 18, 32
 	nonmoacc_med_support = trim(nonmoacc_med_support)
-	IF nonmoacc_med_support = "" THEN nonmoacc_med_support = "0.00"
+	IF nonmoacc_med_support <> "" THEN read_INWD_nonmo_acc_med_support = nonmoacc_med_support
+	IF nonmoacc_med_support =  "" THEN read_INWD_nonmo_acc_med_support = "0.00"
 END FUNCTION
 
-FUNCTION read_INWD_nonmo_acc_othr_support(nonmoacc_othr_support)
+FUNCTION read_INWD_nonmo_acc_othr_support
 	EMReadScreen nonmoacc_othr_support, 15, 19, 32
 	nonmoacc_othr_support = trim(nonmoacc_othr_support)
-	IF nonmoacc_othr_support = "" THEN nonmoacc_othr_support = "0.00"
+	IF nonmoacc_othr_support <> "" THEN read_INWD_nonmo_acc_othr_support = nonmoacc_othr_support
+	IF nonmoacc_othr_support =  "" THEN read_INWD_nonmo_acc_othr_support = "0.00"
 END FUNCTION
 
-FUNCTION read_INWD_additional_20pct(add_20pct)
+FUNCTION read_INWD_additional_20pct
 	EMReadScreen add_20pct, 14, 19, 48
 	add_20pct = trim(add_20pct)
-	IF add_20pct = "" THEN add_20pct = "0.00"
+	IF add_20pct <> "" THEN read_INWD_additional_20pct = add_20pct
+	IF add_20pct =  "" THEN read_INWD_additional_20pct = "0.00"
 END FUNCTION
 
-FUNCTION read_INWD_ttl_iw_amt(ttl_iw_amt)
+FUNCTION read_INWD_ttl_iw_amt
 	EMReadScreen ttl_iw_amt, 15, 19, 64
 	ttl_iw_amt = trim(ttl_iw_amt)
-	IF ttl_iw_amt = "" THEN ttl_iw_amt = "0.00"
+	IF ttl_iw_amt <> "" THEN read_INWD_ttl_iw_amt = ttl_iw_amt
+	IF ttl_iw_amt =  "" THEN read_INWD_ttl_iw_amt = "0.00"
 END FUNCTION
 
 FUNCTION go_to(value, row, col)
@@ -150,51 +171,54 @@ FUNCTION go_to(value, row, col)
 	transmit
 END FUNCTION
 
-FUNCTION build_dialog(inwd_array)
-BeginDialog Dialog1, 0, 0, 331, 280, "Dialog"
+FUNCTION build_dialog(employer_number,inwd_array)
+	'Using the array and the position number of the employer this sets the dialog values to the correct values
+BeginDialog inwd_dialog, 0, 0, 331, 280, "INWD Dialog"
   Text 10, 10, 40, 10, "Employer:"
-  Text 75, 10, 85, 10, inwd_array(1, 1)
+  Text 75, 10, 85, 10, inwd_array(employer_number, 0)
   Text 10, 30, 75, 10, "Monthly Accrual"
   Text 20, 45, 50, 10, "Basic Support"
-  Text 110, 45, 30, 10, inwd_array(1, 2)
+  Text 110, 45, 30, 10, inwd_array(employer_number, 1)
   Text 20, 60, 60, 10, "Spousal Maint."
-  Text 110, 60, 30, 10, inwd_array(1, 3)
+  Text 110, 60, 30, 10, inwd_array(employer_number, 2)
   Text 20, 75, 60, 10, "Child Care"
-  Text 110, 75, 30, 10, inwd_array(1, 4)
+  Text 110, 75, 30, 10, inwd_array(employer_number, 3)
   Text 20, 90, 60, 10, "Medical Support"
-  Text 110, 90, 30, 10, inwd_array(1, 5)
+  Text 110, 90, 30, 10, inwd_array(employer_number, 4)
   Text 20, 105, 60, 10, "Other Support"
-  Text 110, 105, 30, 10, inwd_array(1, 6)
+  Text 110, 105, 30, 10, inwd_array(employer_number, 5)
   Text 10, 125, 75, 10, "Monthly Accrual"
   Text 20, 140, 50, 10, "Basic Support"
-  Text 110, 140, 30, 10, inwd_array(1, 7)
+  Text 110, 140, 30, 10, inwd_array(employer_number, 6)
   Text 20, 155, 60, 10, "Spousal Support"
-  Text 110, 155, 30, 10, inwd_array(1, 8)
+  Text 110, 155, 30, 10, inwd_array(employer_number, 7)
   Text 20, 170, 60, 10, "Child Care"
-  Text 110, 170, 30, 10, inwd_array(1, 9)
+  Text 110, 170, 30, 10, inwd_array(employer_number, 8)
   Text 20, 185, 60, 10, "Medical Support"
-  Text 110, 185, 30, 10, inwd_array(1, 10)
+  Text 110, 185, 30, 10, inwd_array(employer_number, 9)
   Text 20, 200, 60, 10, "Other Support"
-  Text 110, 200, 30, 10, inwd_array(1, 11)
+  Text 110, 200, 30, 10, inwd_array(employer_number, 10)
   Text 10, 220, 75, 10, "Additional 20%"
-  Text 110, 220, 30, 10, inwd_array(1, 12)
+  Text 110, 220, 30, 10, inwd_array(employer_number, 11)
   Text 10, 235, 75, 10, "Total IW Amount"
-  Text 110, 235, 30, 10, inwd_array(1, 13)
+  Text 110, 235, 30, 10, inwd_array(employer_number, 12)
   ButtonGroup ButtonPressed
     OkButton 115, 260, 50, 15
     CancelButton 165, 260, 50, 15
 
 EndDialog
 
-
-	DIALOG Dialog1
+	DIALOG inwd_dialog
 END FUNCTION
 
 
 EMConnect ""
-CALL create_INWD_variable(INWD_array)
-FOR i = 1 TO 3
-	FOR j = 1 to 13
-		MsgBox INWD_array(i, j)
-	NEXT
+	'Dims the employer array to be used later
+ReDim inwd_array(0, 12)
+	'Creates the array of employers and values
+CALL create_INWD_array
+	'Outputs one dialog box per employer as defined by the number of employers
+FOR i = 0 TO (UBound(inwd_array,1))
+		'I = the array position of the current employer and passes this to the dialog box with the full array
+		build_dialog(i,inwd_array)
 NEXT
