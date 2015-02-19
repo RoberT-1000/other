@@ -466,7 +466,6 @@ FUNCTION read_ENFL_case_based_remedy(case_based_remedy)
 	'Gathering the case-based remedies
 	row = 8
 	DO
-		msgbox row
 		EMReadScreen end_of_data, 11, row, 32
 		IF end_of_data <> "End of Data" THEN 
 			EMReadScreen ENFL_case_number, 12, row, 67
@@ -488,7 +487,6 @@ FUNCTION read_ENFL_person_based_remedy(person_based_remedy)
 	CALL go_to("Y", 20, 74)
 	row = 8
 	DO
-		msgbox row
 		EMReadScreen end_of_data, 11, row, 32
 		IF end_of_data <> "End of Data" THEN 
 			EMReadScreen ENFL_case_number, 12, row, 67
@@ -693,7 +691,7 @@ EndDialog
 
 
 	ELSEIF dialog_name = "NCDD EDIT" THEN
-		BeginDialog dialog_name, 0, 0, 296, 250, "NCDD (Edit Mode)"
+		BeginDialog dialog_name, 0, 0, 296, 355, "NCDD (Edit Mode)"
 		ButtonGroup ButtonPressed
 			PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
 			PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
@@ -705,6 +703,10 @@ EndDialog
 			PushButton 225, 15, 30, 15, "PAPD", PAPD_nav_button
 			PushButton 255, 15, 30, 15, "SUDL", SUDL_nav_button
 			CancelButton 260, 205, 30, 15
+		GroupBox 10, 50, 280, 35, "Display Buttons"
+		GroupBox 10, 5, 280, 35, "Navigation Buttons"
+		GroupBox 150, 230, 40, 60, "Extra NAV"
+		GroupBox 10, 225, 130, 45, "DORD Docs"
 		Text 10, 35, 60, 10, "Address Known?"
 		EditBox 115, 35, 65, 15, addr_known
 		Text 10, 50, 75, 10, "Date Last Verified"
@@ -758,7 +760,7 @@ EndDialog
 		SUDL_display = split(SUDL, ";")
 		SUDL_dlg_row = 125
 	
-		BeginDialog dialog_name, 0, 0, 296, 260, "SUDL"
+		BeginDialog dialog_name, 0, 0, 296, 355, "SUDL"
 			ButtonGroup ButtonPressed
 				PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
 				PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
@@ -780,20 +782,32 @@ EndDialog
 				PushButton 255, 60, 30, 15, "SUDL", SUDL_button
 				OkButton 230, 235, 30, 15
 				CancelButton 260, 235, 30, 15
-			GroupBox 10, 50, 280, 35, "Display Buttons"
-			GroupBox 10, 5, 280, 35, "Navigation Buttons"
 			Text 10, 105, 125, 10, "Suppressed Enforcement Remedies:"
 				
 			FOR EACH enf_rem IN SUDL_display
 				Text 40, SUDL_dlg_row, 150, 10, enf_rem		
 				SUDL_dlg_row = SUDL_dlg_row + 15
 			NEXT
+			
+			GroupBox 10, 50, 280, 35, "Display Buttons"
+			GroupBox 10, 5, 280, 35, "Navigation Buttons"
+			GroupBox 150, 230, 40, 60, "Extra NAV"
+			GroupBox 10, 225, 130, 45, "DORD Docs"
+			Text 15, 205, 35, 10, "Results: "
+			EditBox 55, 200, 235, 15, review_result
+			CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
+			CheckBox 15, 245, 120, 10, "Send Address Verification", addr_verif_check
+			CheckBox 15, 255, 120, 10, "Send Non-Pay", non_pay_check
+			PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
+			PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
+			PushButton 155, 265, 30, 10, "MAXIS",MAXIS_nav_button
+			PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
 		EndDialog
 	ELSEIF dialog_name = "LETL" THEN 
 		LETL_display = split(LETL, ";")
 		LETL_dlg_row = 125
 	
-		BeginDialog dialog_name, 0, 0, 296, 260, "LETL"
+		BeginDialog dialog_name, 0, 0, 296, 355, "LETL"
 			ButtonGroup ButtonPressed
 				PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
 				PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
@@ -824,7 +838,112 @@ EndDialog
 				Text 40, LETL_dlg_row, 150, 10, letl_line
 				LETL_dlg_row = LETL_dlg_row + 15
 			NEXT
+			
+			GroupBox 10, 50, 280, 35, "Display Buttons"
+			GroupBox 10, 5, 280, 35, "Navigation Buttons"
+			GroupBox 150, 230, 40, 60, "Extra NAV"
+			GroupBox 10, 225, 130, 45, "DORD Docs"
+			Text 15, 205, 35, 10, "Results: "
+			EditBox 55, 200, 235, 15, review_result
+			CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
+			CheckBox 15, 245, 120, 10, "Send Address Verification", addr_verif_check
+			CheckBox 15, 255, 120, 10, "Send Non-Pay", non_pay_check
+			PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
+			PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
+			PushButton 155, 265, 30, 10, "MAXIS",MAXIS_nav_button
+			PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
 		EndDialog
+	ELSEIF dialog_name = "INWD" THEN
+		BeginDialog dialog_name, 0, 0, 296, 355, "LETL"
+			ButtonGroup ButtonPressed
+				PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
+				PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
+				PushButton 75, 15, 30, 15, "INWD", INWD_nav_button
+				PushButton 105, 15, 30, 15, "LETL", LETL_nav_button
+				PushButton 135, 15, 30, 15, "NCDD", NCDD_nav_button
+				PushButton 165, 15, 30, 15, "NCID", NCID_nav_button
+				PushButton 195, 15, 30, 15, "PALC", PALC_nav_button
+				PushButton 225, 15, 30, 15, "PAPD", PAPD_nav_button
+				PushButton 255, 15, 30, 15, "SUDL", SUDL_nav_button
+				PushButton 15, 60, 30, 15, "CAFS", CAFS_button
+				PushButton 45, 60, 30, 15, "ENFL", ENFL_button
+				PushButton 75, 60, 30, 15, "INWD", INWD_button
+				PushButton 105, 60, 30, 15, "LETL", LETL_button
+				PushButton 135, 60, 30, 15, "NCDD", NCDD_button
+				PushButton 165, 60, 30, 15, "NCID", NCID_button
+				PushButton 195, 60, 30, 15, "PALC", PALC_button
+				PushButton 225, 60, 30, 15, "PAPD", PAPD_button
+				PushButton 255, 60, 30, 15, "SUDL", SUDL_button
+				OkButton 230, 235, 30, 15
+				CancelButton 260, 235, 30, 15	
+  
+			FOR i = 0 TO (UBound(inwd_array,1))
+				INWD_dlg_col = 10
+				INWD_dlg_row = 90
+				Text (INWD_dlg_col + (i * 150)), INWD_dlg_row, 40, 10, "Employer:"
+				Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 85, 10, inwd_array(i, 0)
+					INWD_dlg_row = INWD_dlg_row + 15
+				Text (INWD_dlg_col + (i * 150)), INWD_dlg_row, 75, 10, "Monthly Accrual"
+					INWD_dlg_row = INWD_dlg_row + 15
+				IF inwd_array(i, 1) <> "0.00" THEN 
+					Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 50, 10, "Basic Support"
+					Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 30, 10, inwd_array(i, 1)
+					INWD_dlg_row = INWD_dlg_row + 15
+				END IF
+				IF inwd_array(i, 2) <> "0.00" THEN
+					Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 60, 10, "Spousal Maint."
+					Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 30, 10, inwd_array(i, 2)
+					INWD_dlg_row = INWD_dlg_row + 15
+				END IF
+				IF inwd_array(i, 3) <> "0.00" THEN
+					Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 60, 10, "Child Care"
+					Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 30, 10, inwd_array(i, 3)
+					INWD_dlg_row = INWD_dlg_row + 15
+				END IF
+				IF inwd_array(i, 4) <> "0.00" THEN
+					Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 60, 10, "Medical Support"
+					Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 30, 10, inwd_array(i, 4)
+					INWD_dlg_row = INWD_dlg_row + 15
+				END IF
+				IF inwd_array(i, 5) <> "0.00" THEN
+					Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 60, 10, "Other Support"
+					Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 30, 10, inwd_array(i, 5)
+					INWD_dlg_row = INWD_dlg_row + 15
+				END IF
+				Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 75, 10, "Monthly Non-Accrual"
+				INWD_dlg_row = INWD_dlg_row + 15
+				IF inwd_array(i, 6) <> "0.00" THEN
+					Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 50, 10, "Basic Support"
+					Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 30, 10, inwd_array(i, 6)
+					INWD_dlg_row = INWD_dlg_row + 15
+				END IF
+				IF inwd_array(i, 7) <> "0.00" THEN
+					Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 60, 10, "Spousal Support"
+					Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 30, 10, inwd_array(i, 7)
+					INWD_dlg_row = INWD_dlg_row + 15
+				END IF
+				IF inwd_array(i, 8) <> "0.00" THEN 
+					Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 60, 10, "Child Care"
+					Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 30, 10, inwd_array(i, 8)
+					INWD_dlg_row = INWD_dlg_row + 15
+				END IF
+				IF inwd_array(i, 9) <> "0.00" THEN
+					Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 60, 10, "Medical Support"
+					Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 30, 10, inwd_array(i, 9)
+					INWD_dlg_row = INWD_dlg_row + 15
+				END IF
+				IF inwd_array(i, 10) <> "0.00" THEN
+					Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 60, 10, "Other Support"
+					Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 30, 10, inwd_array(i, 10)
+					INWD_dlg_row = INWD_dlg_row + 15
+				END IF
+				Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 75, 10, "Additional 20%"
+				Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 30, 10, inwd_array(i, 11)
+				INWD_dlg_row = INWD_dlg_row + 15
+				Text (INWD_dlg_col + 15 + (i * 150)), INWD_dlg_row, 75, 10, "Total IW Amount"
+				Text (INWD_dlg_col + 85 + (i * 150)), INWD_dlg_row, 30, 10, inwd_array(i, 12)
+				INWD_dlg_row = INWD_dlg_row + 60
+			NEXT
 	END IF
 
 	DIALOG dialog_name
@@ -850,6 +969,10 @@ FUNCTION all_buttons(current_dlg)
 	ELSEIF ButtonPressed = ENFL_button THEN
 		CALL all_dialogs("ENFL")
 		current_dlg = "ENFL"
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = INWD_button THEN
+		CALL all_dialogs("INWD")
+		current_dlg = "INWD"
 		page_count = page_count + 1
 	ELSEIF ButtonPressed = CAFS_nav_button THEN 
 		CALL navigate_to_PRISM_screen("CAFS")
@@ -927,8 +1050,6 @@ CALL create_NCDD_variable(NCDD)
 CALL create_PALC_variable(PALC)
 CALL create_SUDL_variable(SUDL, 8)
 
-msgbox lenENFL_case_based
-msgbox ENFL_person_based
 
 page_count = 0
 DO
@@ -940,11 +1061,11 @@ DO
 	IF ButtonPressed <> 0 AND ButtonPressed <> -1 THEN CALL all_buttons(current_dlg)
 LOOP UNTIL ButtonPressed = -1
 
+msgbox "done"
+stopscript
+
 'Outputs one dialog box per employer as defined by the number of employers
 FOR i = 0 TO (UBound(inwd_array,1))
 		'I = the array position of the current employer and passes this to the dialog box with the full array
 		CALL build_dialog(i,inwd_array)
 NEXT
-
-msgbox "done"
-stopscript
