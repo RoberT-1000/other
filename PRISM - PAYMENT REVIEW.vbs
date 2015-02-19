@@ -1,3 +1,32 @@
+DIM ENFL_case_based
+DIM ENFL_person_based
+DIM CAAD_nav_button
+DIM CAHL_nav_button
+DIM MAXIS_nav_button
+DIM MMIS_nav_button
+DIM review_result
+DIM current_dlg
+DIM page_count
+DIM ButtonPressed
+DIM CAFS_button
+DIM ENFL_button
+DIM INWD_button
+DIM LETL_button
+DIM NCDD_button
+DIM NCID_button
+DIM PALC_button
+DIM PAPD_button
+DIM SUDL_button
+DIM CAFS_nav_button
+DIM ENFL_nav_button
+DIM INWD_nav_button
+DIM LETL_nav_button
+DIM NCDD_nav_button
+DIM NCID_nav_button
+DIM PALC_nav_button
+DIM PAPD_nav_button
+DIM SUDL_nav_button
+DIM PRISM_case_number
 DIM total_arrears
 DIM npa_arrears
 DIM pa_arrears
@@ -5,6 +34,11 @@ DIM mo_non_acc
 DIM monthly_accrual
 DIM addr_date
 DIM addr_known
+DIM SUDL
+DIM SUDL_display
+DIM LETL
+DIM LETL_display
+DIM ENFL
 
 Function attn
   EMSendKey "<attn>"
@@ -200,7 +234,36 @@ FUNCTION read_NCDD_address_effective_date(addr_date)
 	CALL find_variable("Ver: ", addr_date, 10)
 END FUNCTION
 
+'-----SUDL-----
+FUNCTION create_SUDL_variable(SUDL, sudl_row)
+	CALL navigate_to_PRISM_screen("SUDL")
+	CALL go_to ("Y", 20, 78)
+	
+	DO
+		EMReadScreen remedy, 3, sudl_row, 9
+		remedy = trim(remedy)
+		IF remedy <> "" THEN 
+			EMReadScreen supp_code, 1, sudl_row, 16
+			SUDL = SUDL & "Remedy: " & remedy & ", " & " Suppress Code: " & supp_code	& "; "
+		END IF
+		sudl_row = sudl_row + 1
+	LOOP UNTIL remedy = "" 
+END FUNCTION
 
+'-----LETL-----
+FUNCTION create_LETL_variable(LETL, letl_row)
+	CALL navigate_to_PRISM_screen("LETL")
+	
+	DO
+		EMReadScreen begin_date, 8, letl_row, 10
+		begin_date = trim(begin_date)
+		IF begin_date <> "" THEN 
+			EMReadScreen legal_process, 3, letl_row, 21
+			LETL = LETL & "Begin Date: " & begin_date & ", " & "Legal Process: " & legal_process & "; "
+		END IF
+		letl_row = letl_row + 1
+	LOOP UNTIL begin_date = ""
+END FUNCTION
 
 '-----INWD-----
 FUNCTION create_INWD_array
@@ -389,35 +452,35 @@ BeginDialog inwd_dialog, 0, 0, 196, 300, "INWD Dialog"
   Text 10, 255, 75, 10, "Total IW Amount"
   Text 110, 255, 30, 10, inwd_array(employer_number, 12)
 EndDialog
+	
+
 
 	DIALOG inwd_dialog
 END FUNCTION
 
 '----ENFL----
 FUNCTION read_ENFL_case_based_remedy(case_based_remedy)
-	'Getting the case number -- until a better option is available.
-	CALL navigate_to_PRISM_screen("CAAD")
-	CALL find_variable("Case: ", PRISM_case_number, 13)
-	PRISM_case_number = replace(PRISM_case_number, " ", "")
-
-	'Going back to ENFL
+	'Going to ENFL
 	CALL navigate_to_PRISM_screen("ENFL")
 	CALL go_to("Y", 20, 74)
 	'Gathering the case-based remedies
 	row = 8
 	DO
-		DO
-			EMReadScreen end_of_data, 11, 24, 2
+		msgbox row
+		EMReadScreen end_of_data, 11, row, 32
+		IF end_of_data <> "End of Data" THEN 
 			EMReadScreen ENFL_case_number, 12, row, 67
 			ENFL_case_number = replace(ENFL_case_number, " ", "")
 			EMReadScreen remedy, 3, row, 2
 			remedy = replace(remedy, " ", "")
-			IF ENFL_case_number = PRISM_case_number THEN case_based_remedy = case_based_remedy & remedy & ", "
-			row = row + 1
-		LOOP UNTIL row = 20
-		PF8
-		row = 8
-	LOOP UNTIL end_of_data = "End of data"
+			IF ENFL_case_number = replace(PRISM_case_number, " ", "") THEN case_based_remedy = case_based_remedy & remedy & ", "
+		END IF
+		row = row + 1
+		IF row = 20 THEN
+			PF8
+			row = 8
+		END IF
+	LOOP UNTIL end_of_data = "End of Data"
 END FUNCTION
 
 FUNCTION read_ENFL_person_based_remedy(person_based_remedy)
@@ -425,8 +488,9 @@ FUNCTION read_ENFL_person_based_remedy(person_based_remedy)
 	CALL go_to("Y", 20, 74)
 	row = 8
 	DO
-		DO
-			EMReadScreen end_of_data, 11, 24, 2
+		msgbox row
+		EMReadScreen end_of_data, 11, row, 32
+		IF end_of_data <> "End of Data" THEN 
 			EMReadScreen ENFL_case_number, 12, row, 67
 			ENFL_case_number = trim(ENFL_case_number)
 			IF ENFL_case_number = "" THEN 
@@ -434,11 +498,13 @@ FUNCTION read_ENFL_person_based_remedy(person_based_remedy)
 				remedy = trim(remedy)
 				IF remedy <> "" THEN person_based_remedy = person_based_remedy & remedy & ", "
 			END IF
-			row = row + 1
-		LOOP UNTIL row = 20
-		PF8
-		row = 8
-	LOOP UNTIL end_of_data = "End of data"
+		END IF
+		row = row + 1
+		IF row = 20 THEN 
+			PF8
+			row = 8
+		END IF
+	LOOP UNTIL end_of_data = "End of Data"
 END FUNCTION
 
 '----The functions that pull it all together----
@@ -482,122 +548,403 @@ FUNCTION create_PALC_variable(PALC)
 END FUNCTION
 
 FUNCTION create_ENFL_variable(ENFL)
-	CALL read_ENFL_case_based_remedy(case_based)
-	IF case_based <> "" THEN ENFL = "Case Based: " & case_based & "; "
-	CALL read_ENFL_person_based_remedy(person_based)
-	IF person_based <> "" THEN ENFL = ENFL & "Person Based: " & person_based
+	CALL read_ENFL_case_based_remedy(ENFL_case_based)
+	IF ENFL_case_based = "" THEN 
+		ENFL = "Case Based: None;"
+	ELSE
+		ENFL = "Case Based: " & ENFL_case_based & "; "
+	END IF
+	CALL read_ENFL_person_based_remedy(ENFL_person_based)
+	IF ENFL_person_based = "" THEN 
+		ENFL = ENFL & "Person Based: None"
+	ELSE
+		ENFL = ENFL & "Person Based: " & person_based
+	END IF
 END FUNCTION
 
 '-----dialogs-----
 FUNCTION all_dialogs(dialog_name)
-	IF dialog_name = "CAFS" THEN
-		BeginDialog dialog_name, 0, 0, 196, 185, "CAFS"
-		  ButtonGroup ButtonPressed
-		    PushButton 5, 5, 30, 15, "CAFS", CAFS_button
-		    PushButton 95, 5, 30, 15, "NCDD", NCDD_button
-		    PushButton 125, 5, 30, 15, "PALC", PALC_button
-		    PushButton 35, 5, 30, 15, "ENFL", ENFL_button
-		    PushButton 65, 5, 30, 15, "INWD", INWD_button
-		    CancelButton 160, 5, 30, 15
-		  Text 10, 35, 60, 10, "Monthly Accrual"
-		  Text 115, 35, 65, 10, monthly_accrual
-		  Text 10, 50, 75, 10, "Monthly Non-Accrual"
-		  Text 115, 50, 65, 10, mo_non_acc
-		  Text 10, 65, 75, 10, "Total Arrears"
-		  Text 115, 65, 65, 10, total_arrears
-		  Text 115, 80, 65, 10, npa_arrears
-		  Text 115, 95, 65, 10, pa_arrears
-		  Text 10, 80, 75, 10, "NPA Arrears"
-		  Text 10, 95, 75, 10, "PA Arrears"
+	IF dialog_name = "CASE NUMBER" THEN
+		EditBox 115, 20, 80, 15, PRISM_case_number
+		BeginDialog dialog_name, 0, 0, 201, 65, "CASE NUMBER"
+		ButtonGroup ButtonPressed
+			OkButton 50, 45, 50, 15
+			CancelButton 100, 45, 50, 15
+		Text 10, 10, 95, 10, "No case number was found."
+		Text 10, 25, 105, 10, "Please enter the case number:"
 		EndDialog
 	ELSEIF dialog_name = "MENU" THEN
-		BeginDialog dialog_name, 0, 0, 196, 185, "MENU"
-		  ButtonGroup ButtonPressed
-		    PushButton 5, 5, 30, 15, "CAFS", CAFS_button
-		    PushButton 95, 5, 30, 15, "NCDD", NCDD_button
-		    PushButton 125, 5, 30, 15, "PALC", PALC_button
-		    PushButton 35, 5, 30, 15, "ENFL", ENFL_button
-		    PushButton 65, 5, 30, 15, "INWD", INWD_button
-		    CancelButton 160, 5, 30, 15
+		BeginDialog dialog_name, 0, 0, 296, 215, "MENU"
+		ButtonGroup ButtonPressed
+			PushButton 15, 20, 30, 15, "CAFS", CAFS_button
+			PushButton 45, 20, 30, 15, "ENFL", ENFL_button
+			PushButton 75, 20, 30, 15, "INWD", INWD_button
+			PushButton 105, 20, 30, 15, "LETL", LETL_button
+			PushButton 135, 20, 30, 15, "NCDD", NCDD_button
+			PushButton 165, 20, 30, 15, "NCID", NCID_button
+			PushButton 195, 20, 30, 15, "PALC", PALC_button
+			PushButton 225, 20, 30, 15, "PAPD", PAPD_button
+			PushButton 255, 20, 30, 15, "SUDL", SUDL_button
+			CancelButton 260, 195, 30, 15
+		Text 10, 60, 280, 10, "This is the Payment Review script. You can use it to quickly review information on:"
+		Text 15, 75, 25, 10, "* CAFS"
+		Text 45, 75, 25, 10, "* ENFL"
+		Text 75, 75, 25, 10, "* INWD"
+		Text 105, 75, 25, 10, "* LETL"
+		Text 135, 75, 25, 10, "*NCDD"
+		Text 165, 75, 25, 10, "* NCID"
+		Text 195, 75, 25, 10, "* PALC"
+		Text 225, 75, 25, 10, "* PAPD"
+		Text 255, 75, 25, 10, "* SUDL"
+		Text 10, 95, 275, 20, "After reviewing the information, you will be prompted to write what the next action on the case will be."
+		Text 10, 120, 220, 10, "You can also send specific DORD documents."
+		Text 10, 140, 220, 10, "If, at any point, you wish to stop the script, press ``Cancel``"
+		Text 10, 160, 220, 10, "Use the DISPLAY BUTTONS to begin."
+		GroupBox 10, 10, 280, 35, "Display Buttons"
 		EndDialog
+	ELSEIF dialog_name = "CAFS" THEN
+BeginDialog dialog_name, 0, 0, 296, 355, "CAFS"
+  ButtonGroup ButtonPressed
+    PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
+    PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
+    PushButton 75, 15, 30, 15, "INWD", INWD_nav_button
+    PushButton 105, 15, 30, 15, "LETL", LETL_nav_button
+    PushButton 135, 15, 30, 15, "NCDD", NCDD_nav_button
+    PushButton 165, 15, 30, 15, "NCID", NCID_nav_button
+    PushButton 195, 15, 30, 15, "PALC", PALC_nav_button
+    PushButton 225, 15, 30, 15, "PAPD", PAPD_nav_button
+    PushButton 255, 15, 30, 15, "SUDL", SUDL_nav_button
+    PushButton 15, 60, 30, 15, "CAFS", CAFS_button
+    PushButton 45, 60, 30, 15, "ENFL", ENFL_button
+    PushButton 75, 60, 30, 15, "INWD", INWD_button
+    PushButton 105, 60, 30, 15, "LETL", LETL_button
+    PushButton 135, 60, 30, 15, "NCDD", NCDD_button
+    PushButton 165, 60, 30, 15, "NCID", NCID_button
+    PushButton 195, 60, 30, 15, "PALC", PALC_button
+    PushButton 225, 60, 30, 15, "PAPD", PAPD_button
+    PushButton 255, 60, 30, 15, "SUDL", SUDL_button
+    OkButton 230, 335, 30, 15
+    CancelButton 260, 335, 30, 15
+  GroupBox 10, 50, 280, 35, "Display Buttons"
+  GroupBox 10, 5, 280, 35, "Navigation Buttons"
+  GroupBox 150, 230, 40, 60, "Extra NAV"
+    GroupBox 10, 225, 130, 45, "DORD Docs"
+  Text 65, 105, 60, 10, "Monthly Accrual"
+  Text 170, 105, 65, 10, monthly_accrual
+  Text 65, 120, 75, 10, "Monthly Non-Accrual"
+  Text 170, 120, 65, 10, mo_non_acc
+  Text 65, 135, 75, 10, "Total Arrears"
+  Text 170, 135, 65, 10, total_arrears
+  Text 170, 150, 65, 10, npa_arrears
+  Text 170, 165, 65, 10, pa_arrears
+  Text 65, 150, 75, 10, "NPA Arrears"
+  Text 65, 165, 75, 10, "PA Arrears"
+  Text 15, 205, 35, 10, "Results: "
+  EditBox 55, 200, 235, 15, review_result
+  CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
+  CheckBox 15, 245, 120, 10, "Send Address Verification", addr_verif_check
+  CheckBox 15, 255, 120, 10, "Send Non-Pay", non_pay_check
+    PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
+    PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
+    PushButton 155, 265, 30, 10, "MAXIS",MAXIS_nav_button
+    PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
+EndDialog
+	ELSEIF dialog_name = "ENFL" THEN
+BeginDialog dialog_name, 0, 0, 296, 355, "ENFL"
+  ButtonGroup ButtonPressed
+    PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
+    PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
+    PushButton 75, 15, 30, 15, "INWD", INWD_nav_button
+    PushButton 105, 15, 30, 15, "LETL", LETL_nav_button
+    PushButton 135, 15, 30, 15, "NCDD", NCDD_nav_button
+    PushButton 165, 15, 30, 15, "NCID", NCID_nav_button
+    PushButton 195, 15, 30, 15, "PALC", PALC_nav_button
+    PushButton 225, 15, 30, 15, "PAPD", PAPD_nav_button
+    PushButton 255, 15, 30, 15, "SUDL", SUDL_nav_button
+    PushButton 15, 60, 30, 15, "CAFS", CAFS_button
+    PushButton 45, 60, 30, 15, "ENFL", ENFL_button
+    PushButton 75, 60, 30, 15, "INWD", INWD_button
+    PushButton 105, 60, 30, 15, "LETL", LETL_button
+    PushButton 135, 60, 30, 15, "NCDD", NCDD_button
+    PushButton 165, 60, 30, 15, "NCID", NCID_button
+    PushButton 195, 60, 30, 15, "PALC", PALC_button
+    PushButton 225, 60, 30, 15, "PAPD", PAPD_button
+    PushButton 255, 60, 30, 15, "SUDL", SUDL_button
+    OkButton 230, 335, 30, 15
+    CancelButton 260, 335, 30, 15
+  GroupBox 10, 50, 280, 35, "Display Buttons"
+  GroupBox 10, 5, 280, 35, "Navigation Buttons"
+  GroupBox 150, 230, 40, 60, "Extra NAV"
+  GroupBox 10, 225, 130, 45, "DORD Docs"
+  Text 155, 105, 95, 10, ENFL_case_based
+  Text 155, 120, 95, 10, ENFL_person_based
+  Text 15, 205, 35, 10, "Results: "
+  EditBox 55, 200, 235, 15, review_result
+  CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
+  CheckBox 15, 245, 120, 10, "Send Address Verification", addr_verif_check
+  CheckBox 15, 255, 120, 10, "Send Non-Pay", non_pay_check
+    PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
+    PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
+    PushButton 155, 265, 30, 10, "MAXIS", MAXIS_nav_button
+    PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
+  Text 25, 105, 100, 10, "Case-Based Remedies:"
+  Text 25, 120, 100, 10, "Person-Based Remedies:"
+EndDialog
+
+
 	ELSEIF dialog_name = "NCDD EDIT" THEN
-		BeginDialog dialog_name, 0, 0, 196, 185, "NCDD"
-		  ButtonGroup ButtonPressed
-		    PushButton 5, 5, 30, 15, "CAFS", CAFS_button
-		    PushButton 95, 5, 30, 15, "NCDD", NCDD_button
-		    PushButton 125, 5, 30, 15, "PALC", PALC_button
-		    PushButton 35, 5, 30, 15, "ENFL", ENFL_button
-		    PushButton 65, 5, 30, 15, "INWD", INWD_button
-		    CancelButton 160, 5, 30, 15
-		  Text 10, 35, 60, 10, "Address Known?"
-		  EditBox 115, 35, 65, 15, addr_known
-		  Text 10, 50, 75, 10, "Date Last Verified"
-		  EditBox 115, 50, 65, 15, addr_date
-		    PushButton 135, 165, 60, 15, "FINISHED EDITING", done_ncdd_edit_button
+		BeginDialog dialog_name, 0, 0, 296, 250, "NCDD (Edit Mode)"
+		ButtonGroup ButtonPressed
+			PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
+			PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
+			PushButton 75, 15, 30, 15, "INWD", INWD_nav_button
+			PushButton 105, 15, 30, 15, "LETL", LETL_nav_button
+			PushButton 135, 15, 30, 15, "NCDD", NCDD_nav_button
+			PushButton 165, 15, 30, 15, "NCID", NCID_nav_button
+			PushButton 195, 15, 30, 15, "PALC", PALC_nav_button
+			PushButton 225, 15, 30, 15, "PAPD", PAPD_nav_button
+			PushButton 255, 15, 30, 15, "SUDL", SUDL_nav_button
+			CancelButton 260, 205, 30, 15
+		Text 10, 35, 60, 10, "Address Known?"
+		EditBox 115, 35, 65, 15, addr_known
+		Text 10, 50, 75, 10, "Date Last Verified"
+		EditBox 115, 50, 65, 15, addr_date
+			PushButton 215, 50, 70, 15, "FINISHED EDITING", done_ncdd_edit_button
 		EndDialog
 	ELSEIF dialog_name = "NCDD" THEN
-		BeginDialog dialog_name, 0, 0, 196, 185, "NCDD"
-		  ButtonGroup ButtonPressed
-		    PushButton 5, 5, 30, 15, "CAFS", CAFS_button
-		    PushButton 95, 5, 30, 15, "NCDD", NCDD_button
-		    PushButton 125, 5, 30, 15, "PALC", PALC_button
-		    PushButton 35, 5, 30, 15, "ENFL", ENFL_button
-		    PushButton 65, 5, 30, 15, "INWD", INWD_button
-		    CancelButton 160, 5, 30, 15
-		  Text 10, 35, 60, 10, "Address Known?"
-		  Text 115, 35, 65, 10, addr_known
-		  Text 10, 50, 75, 10, "Date Last Verified"
-		  Text 115, 50, 65, 10, addr_date
-		    PushButton 155, 165, 30, 15, "EDIT", ncdd_edit_button
+		BeginDialog dialog_name, 0, 0, 296, 355, "NCDD"
+		ButtonGroup ButtonPressed
+			PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
+			PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
+			PushButton 75, 15, 30, 15, "INWD", INWD_nav_button
+			PushButton 105, 15, 30, 15, "LETL", LETL_nav_button
+			PushButton 135, 15, 30, 15, "NCDD", NCDD_nav_button
+			PushButton 165, 15, 30, 15, "NCID", NCID_nav_button
+			PushButton 195, 15, 30, 15, "PALC", PALC_nav_button
+			PushButton 225, 15, 30, 15, "PAPD", PAPD_nav_button
+			PushButton 255, 15, 30, 15, "SUDL", SUDL_nav_button
+			PushButton 15, 60, 30, 15, "CAFS", CAFS_button
+			PushButton 45, 60, 30, 15, "ENFL", ENFL_button
+			PushButton 75, 60, 30, 15, "INWD", INWD_button
+			PushButton 105, 60, 30, 15, "LETL", LETL_button
+			PushButton 135, 60, 30, 15, "NCDD", NCDD_button
+			PushButton 165, 60, 30, 15, "NCID", NCID_button
+			PushButton 195, 60, 30, 15, "PALC", PALC_button
+			PushButton 225, 60, 30, 15, "PAPD", PAPD_button
+			PushButton 255, 60, 30, 15, "SUDL", SUDL_button
+			PushButton 250, 100, 30, 15, "EDIT", ncdd_edit_button
+			OkButton 230, 235, 30, 15
+			CancelButton 260, 235, 30, 15
+		Text 40, 105, 60, 10, "Address Known?"
+		Text 145, 105, 65, 10, addr_known
+		Text 40, 120, 75, 10, "Date Last Verified"
+		Text 145, 120, 65, 10, addr_date
+		GroupBox 10, 50, 280, 35, "Display Buttons"
+		GroupBox 10, 5, 280, 35, "Navigation Buttons"
+		GroupBox 150, 230, 40, 60, "Extra NAV"
+		GroupBox 10, 225, 130, 45, "DORD Docs"
+		Text 15, 205, 35, 10, "Results: "
+		EditBox 55, 200, 235, 15, review_result
+		CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
+		CheckBox 15, 245, 120, 10, "Send Address Verification", addr_verif_check
+		CheckBox 15, 255, 120, 10, "Send Non-Pay", non_pay_check
+		PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
+		PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
+		PushButton 155, 265, 30, 10, "MAXIS",MAXIS_nav_button
+		PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
+		EndDialog
+		
+	ELSEIF dialog_name = "SUDL" THEN
+		SUDL_display = split(SUDL, ";")
+		SUDL_dlg_row = 125
+	
+		BeginDialog dialog_name, 0, 0, 296, 260, "SUDL"
+			ButtonGroup ButtonPressed
+				PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
+				PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
+				PushButton 75, 15, 30, 15, "INWD", INWD_nav_button
+				PushButton 105, 15, 30, 15, "LETL", LETL_nav_button
+				PushButton 135, 15, 30, 15, "NCDD", NCDD_nav_button
+				PushButton 165, 15, 30, 15, "NCID", NCID_nav_button
+				PushButton 195, 15, 30, 15, "PALC", PALC_nav_button
+				PushButton 225, 15, 30, 15, "PAPD", PAPD_nav_button
+				PushButton 255, 15, 30, 15, "SUDL", SUDL_nav_button
+				PushButton 15, 60, 30, 15, "CAFS", CAFS_button
+				PushButton 45, 60, 30, 15, "ENFL", ENFL_button
+				PushButton 75, 60, 30, 15, "INWD", INWD_button
+				PushButton 105, 60, 30, 15, "LETL", LETL_button
+				PushButton 135, 60, 30, 15, "NCDD", NCDD_button
+				PushButton 165, 60, 30, 15, "NCID", NCID_button
+				PushButton 195, 60, 30, 15, "PALC", PALC_button
+				PushButton 225, 60, 30, 15, "PAPD", PAPD_button
+				PushButton 255, 60, 30, 15, "SUDL", SUDL_button
+				OkButton 230, 235, 30, 15
+				CancelButton 260, 235, 30, 15
+			GroupBox 10, 50, 280, 35, "Display Buttons"
+			GroupBox 10, 5, 280, 35, "Navigation Buttons"
+			Text 10, 105, 125, 10, "Suppressed Enforcement Remedies:"
+				
+			FOR EACH enf_rem IN SUDL_display
+				Text 40, SUDL_dlg_row, 150, 10, enf_rem		
+				SUDL_dlg_row = SUDL_dlg_row + 15
+			NEXT
+		EndDialog
+	ELSEIF dialog_name = "LETL" THEN 
+		LETL_display = split(LETL, ";")
+		LETL_dlg_row = 125
+	
+		BeginDialog dialog_name, 0, 0, 296, 260, "LETL"
+			ButtonGroup ButtonPressed
+				PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
+				PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
+				PushButton 75, 15, 30, 15, "INWD", INWD_nav_button
+				PushButton 105, 15, 30, 15, "LETL", LETL_nav_button
+				PushButton 135, 15, 30, 15, "NCDD", NCDD_nav_button
+				PushButton 165, 15, 30, 15, "NCID", NCID_nav_button
+				PushButton 195, 15, 30, 15, "PALC", PALC_nav_button
+				PushButton 225, 15, 30, 15, "PAPD", PAPD_nav_button
+				PushButton 255, 15, 30, 15, "SUDL", SUDL_nav_button
+				PushButton 15, 60, 30, 15, "CAFS", CAFS_button
+				PushButton 45, 60, 30, 15, "ENFL", ENFL_button
+				PushButton 75, 60, 30, 15, "INWD", INWD_button
+				PushButton 105, 60, 30, 15, "LETL", LETL_button
+				PushButton 135, 60, 30, 15, "NCDD", NCDD_button
+				PushButton 165, 60, 30, 15, "NCID", NCID_button
+				PushButton 195, 60, 30, 15, "PALC", PALC_button
+				PushButton 225, 60, 30, 15, "PAPD", PAPD_button
+				PushButton 255, 60, 30, 15, "SUDL", SUDL_button
+				OkButton 230, 235, 30, 15
+				CancelButton 260, 235, 30, 15
+			GroupBox 10, 50, 280, 35, "Display Buttons"
+			GroupBox 10, 5, 280, 35, "Navigation Buttons"
+
+			Text 10, 105, 125, 10, "Legal Tracking List:"
+			
+			FOR EACH letl_line IN LETL_display
+				Text 40, LETL_dlg_row, 150, 10, letl_line
+				LETL_dlg_row = LETL_dlg_row + 15
+			NEXT
 		EndDialog
 	END IF
 
 	DIALOG dialog_name
 END FUNCTION
 
-BeginDialog Dialog1, 0, 0, 336, 150, "Dialog"
-  ButtonGroup ButtonPressed
-    PushButton 5, 10, 30, 15, "CAFS", CAFS_button
-  EditBox 50, 10, 275, 15, CAFS
-  ButtonGroup ButtonPressed
-    PushButton 5, 30, 30, 15, "NCDD", NCDD_button
-  EditBox 50, 30, 275, 15, NCDD
-  ButtonGroup ButtonPressed
-    PushButton 5, 50, 30, 15, "PALC", PALC_button
-  EditBox 50, 50, 275, 15, PALC
-  ButtonGroup ButtonPressed
-    PushButton 5, 70, 30, 15, "ENFL", ENFL_button
-  EditBox 50, 70, 275, 15, ENFL
-  ButtonGroup ButtonPressed
-    PushButton 115, 130, 50, 15, "INWD", INWD_button
-    CancelButton 170, 130, 50, 15
-EndDialog
+FUNCTION all_buttons(current_dlg)
+	IF ButtonPressed = CAFS_button THEN 
+		CALL all_dialogs("CAFS")
+		current_dlg = "CAFS"
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = LETL_button THEN
+		CALL all_dialogs("LETL")
+		current_dlg = "LETL"
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = NCDD_button THEN 
+		CALL all_dialogs("NCDD")
+		current_dlg = "NCDD"
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = SUDL_button THEN 
+		CALL all_dialogs("SUDL")
+		current_dlg = "SUDL"
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = ENFL_button THEN
+		CALL all_dialogs("ENFL")
+		current_dlg = "ENFL"
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = CAFS_nav_button THEN 
+		CALL navigate_to_PRISM_screen("CAFS")
+		CALL all_dialogs(current_dlg)
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = ENFL_nav_button THEN 
+		CALL navigate_to_PRISM_screen("ENFL")
+		CALL all_dialogs(current_dlg)
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = INWD_nav_button THEN 
+		CALL navigate_to_PRISM_screen("INWD")
+		CALL all_dialogs(current_dlg)
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = LETL_nav_button THEN 
+		CALL navigate_to_PRISM_screen("LETL")
+		CALL all_dialogs(current_dlg)
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = NCDD_nav_button THEN 
+		CALL navigate_to_PRISM_screen("NCDD")
+		CALL all_dialogs(current_dlg)
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = NCID_nav_button THEN 
+		CALL navigate_to_PRISM_screen("NCID")
+		CALL all_dialogs(current_dlg)
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = PALC_nav_button THEN 
+		CALL navigate_to_PRISM_screen("PALC")
+		CALL all_dialogs(current_dlg)
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = PAPD_nav_button THEN 
+		CALL navigate_to_PRISM_screen("PAPD")
+		CALL all_dialogs(current_dlg)
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = SUDL_nav_button THEN 
+		CALL navigate_to_PRISM_screen("SUDL")
+		CALL all_dialogs(current_dlg)
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = CAAD_nav_button THEN
+		CALL navigate_to_PRISM_screen("CAAD")
+		CALL all_dialogs(current_dlg)
+		page_count = page_count + 1
+	ELSEIF ButtonPressed = CAHL_nav_button THEN
+		CALL navigate_to_PRISM_screen("CAHL")
+		CALL all_dialogs(current_dlg)
+		page_count = page_count + 1
+'	ELSEIF ButtonPressed = MAXIS_nav_button THEN
+'		Here's where we need a custom function that pulls the NCP's SSN and navigates to MAXIS Inquiry DB to search PERS by SSN and then ...
+'			for all case numbers with "AP" search CASE/CURR for status <> "INACTIVE" and then search CASE/PERS for cases where status <> "INACTIVE" for the cl with that SSN active on CASH.
+'		CALL all_dialogs(current_dlg)
+'	ELSEIF ButtonPressed = MMIS_nav_button THEN
+'		Here's where we need a custom function that pulls the NCP's SSN and navigates to MMIS to search for an active Medicaid or MinnesotaCare case.
+'		CALL all_dialogs(current_dlg)
+	END IF
+	
 
+END FUNCTION
 
+'-------------------------------------------------------------------------------THE SCRIPT---------------------------------------------------------------------------------
+EMConnect ""
 
-EMConnect "B"
-CALL navigate_to_PRISM_screen("CAFS")
+CALL navigate_to_PRISM_screen("CAAD")
+CALL find_variable("Case: ", PRISM_case_number, 13)
+DO
+	CALL all_dialogs("CASE NUMBER")
+		IF ButtonPressed = 0 THEN stopscript
+LOOP UNTIL PRISM_case_number <> ""
+CALL go_to(PRISM_case_number, 20, 8)
+
 CALL create_CAFS_variable(CAFS)
-CALL create_PALC_variable(PALC)
-CALL create_NCDD_variable(NCDD)
 CALL create_ENFL_variable(ENFL)
 ReDim inwd_array(0, 12)
 CALL create_INWD_array
+CALL create_LETL_variable(LETL, 8)
+CALL create_NCDD_variable(NCDD)
+CALL create_PALC_variable(PALC)
+CALL create_SUDL_variable(SUDL, 8)
 
+msgbox lenENFL_case_based
+msgbox ENFL_person_based
 
+page_count = 0
 DO
-	CALL all_dialogs("MENU")
-	IF ButtonPressed = CAFS_button THEN CALL all_dialogs("CAFS")
-	IF ButtonPressed = PALC_button THEN CALL navigate_to_PRISM_screen("PALC")
-	IF ButtonPressed = NCDD_button THEN CALL all_dialogs("NCDD")
-	IF ButtonPressed = ncdd_edit_button THEN CALL all_dialogs("NCDD EDIT")
-	IF ButtonPressed = done_ncdd_edit_button THEN call all_dialogs("NCDD")
-	IF ButtonPressed = ENFL_button THEN CALL navigate_to_PRISM_screen("ENFL")
-	IF ButtonPressed = 0 THEN stopscript
-LOOP UNTIL ButtonPressed = INWD_button
+	IF page_count = 0 THEN CALL all_dialogs("MENU")
+	IF ButtonPressed = 0 THEN 
+		cancel_warning = MsgBox("Are you sure you want to cancel? Press YES to cancel. Press NO to return to the script.", vbYesNo)
+		IF cancel_warning = vbYes THEN stopscript
+	END IF
+	IF ButtonPressed <> 0 AND ButtonPressed <> -1 THEN CALL all_buttons(current_dlg)
+LOOP UNTIL ButtonPressed = -1
 
 'Outputs one dialog box per employer as defined by the number of employers
 FOR i = 0 TO (UBound(inwd_array,1))
 		'I = the array position of the current employer and passes this to the dialog box with the full array
 		CALL build_dialog(i,inwd_array)
 NEXT
+
+msgbox "done"
+stopscript
