@@ -1,5 +1,17 @@
-'----Still need to make the function that creates PAPD
-
+'Declaring the variables
+DIM error_message
+DIM next_review
+DIM caad_code
+DIM worker_signature
+DIM put_LETL_into_CAAD_check
+DIM put_NCID_into_CAAD_check
+DIM put_PALC_into_CAAD_check
+DIM put_NCDD_into_CAAD_check
+DIM put_INWD_into_CAAD_check
+DIM put_ENFL_into_CAAD_check
+DIM put_CAFS_into_CAAD_check
+DIM put_SUDL_into_CAAD_check
+DIM put_PAPD_into_CAAD_check
 DIM NCP_SSN
 DIM non_compliance_check
 DIM addr_verif_check
@@ -47,94 +59,34 @@ DIM SUDL_display
 DIM LETL
 DIM LETL_display
 DIM ENFL
+DIM PAPD
 
-Function attn
-  EMSendKey "<attn>"
-  EMWaitReady -1, 0
-End function
+'LOADING ROUTINE FUNCTIONS (FOR PRISM)---------------------------------------------------------------
+url = "https://raw.githubusercontent.com/theVKC/Anoka-PRISM-Scripts/master/Shared%20Functions%20Library/PRISM%20Functions%20Library.vbs"
+Set req = CreateObject("Msxml2.XMLHttp.6.0")				'Creates an object to get a URL
+req.open "GET", url, False									'Attempts to open the URL
+req.send													'Sends request
+If req.Status = 200 Then									'200 means great success
+	Set fso = CreateObject("Scripting.FileSystemObject")	'Creates an FSO
+	Execute req.responseText								'Executes the script code
+ELSE														'Error message, tells user to try to reach github.com, otherwise instructs to contact Veronica with details (and stops script).
+	MsgBox 	"Something has gone wrong. The code stored on GitHub was not able to be reached." & vbCr &_ 
+			vbCr & _
+			"Before contacting Veronica Cary, please check to make sure you can load the main page at www.GitHub.com." & vbCr &_
+			vbCr & _
+			"If you can reach GitHub.com, but this script still does not work, ask an alpha user to contact Veronica Cary and provide the following information:" & vbCr &_
+			vbTab & "- The name of the script you are running." & vbCr &_
+			vbTab & "- Whether or not the script is ""erroring out"" for any other users." & vbCr &_
+			vbTab & "- The name and email for an employee from your IT department," & vbCr & _
+			vbTab & vbTab & "responsible for network issues." & vbCr &_
+			vbTab & "- The URL indicated below (a screenshot should suffice)." & vbCr &_
+			vbCr & _
+			"Veronica will work with your IT department to try and solve this issue, if needed." & vbCr &_ 
+			vbCr &_
+			"URL: " & url
+			StopScript
+END IF
 
-Function find_variable(x, y, z) 'x is string, y is variable, z is length of new variable
-  row = 1
-  col = 1
-  EMSearch x, row, col
-  If row <> 0 then EMReadScreen y, z, row, col + len(x)
-End function
-
-Function navigate_to_PRISM_screen(x) 'x is the name of the screen
-  EMWriteScreen x, 21, 18
-  EMSendKey "<enter>"
-  EMWaitReady 0, 0
-End function
-
-Function PF1
-  EMSendKey "<PF1>"
-  EMWaitReady 0, 0
-End function
-
-Function PF2
-  EMSendKey "<PF2>"
-  EMWaitReady 0, 0
-End function
-
-function PF3
-  EMSendKey "<PF3>"
-  EMWaitReady 0, 0
-end function
-
-Function PF4
-  EMSendKey "<PF4>"
-  EMWaitReady 0, 0
-End function
-
-Function PF5
-  EMSendKey "<PF5>"
-  EMWaitReady 0, 0
-End function
-
-Function PF6
-  EMSendKey "<PF6>"
-  EMWaitReady 0, 0
-End function
-
-Function PF7
-  EMSendKey "<PF7>"
-  EMWaitReady 0, 0
-End function
-
-function PF8
-  EMSendKey "<PF8>"
-  EMWaitReady 0, 0
-end function
-
-function PF9
-  EMSendKey "<PF9>"
-  EMWaitReady 0, 0
-end function
-
-function PF10
-  EMSendKey "<PF10>"
-  EMWaitReady 0, 0
-end function
-
-Function PF11
-  EMSendKey "<PF11>"
-  EMWaitReady 0, 0
-End function
-
-Function PF12
-  EMSendKey "<PF12>"
-  EMWaitReady 0, 0
-End function
-
-function PF20
-  EMSendKey "<PF20>"
-  EMWaitReady 0, 0
-end function
-
-function transmit
-  EMSendKey "<enter>"
-  EMWaitReady 0, 0
-end function
 
 '-----NEW FUNCTIONS-----
 '-------------------------------------------------------------------------------------Navigation-------------------------------------------------------------------------------------
@@ -210,7 +162,6 @@ FUNCTION find_client_in_MMIS(NCP_SSN)
 END FUNCTION
 
 
-
 '-------------------------------------------------------------------------------------CAFS-------------------------------------------------------------------------------------
 FUNCTION create_CAFS_variable(CAFS)
 	CALL navigate_to_PRISM_screen("CAFS")
@@ -236,7 +187,7 @@ END FUNCTION
 
 FUNCTION read_monthly_accrual(monthly_accrual_variable)
 	CALL navigate_to_prism_screen("CAFS")
-	CALL find_variable("Monthly Accrual       :", monthly_accrual_variable, 15)		'Commented out because we are not sure why it started reading "PR"
+	CALL find_variable("Monthly Accrual       :", monthly_accrual_variable, 15)
 	monthly_accrual_variable = trim(monthly_accrual_variable)
 END FUNCTION
 
@@ -397,6 +348,37 @@ FUNCTION create_LETL_variable(LETL, letl_row)
 		letl_row = letl_row + 1
 	LOOP UNTIL begin_date = ""
 END FUNCTION
+
+'--------------------------------------------------------------------------------------PAPD--------------------------------------------------------------------------------------
+FUNCTION create_PAPD_variable(PAPD)
+
+	CALL navigate_to_PRISM_screen("PAPD")
+	CALL go_to("B", 3, 29)
+	
+	PAPD_row = 8
+	DO
+		EMReadScreen end_of_data, 11, PAPD_row, 32
+		EMReadScreen papd_remedy, 3, PAPD_row, 30
+		EMReadScreen pay_plan_begin, 8, PAPD_row, 47
+		EMReadScreen pay_plan_end, 8, PAPD_row, 58
+			pay_plan_end = replace(pay_plan_end, " ", "")
+		IF end_of_data <> "End of Data" AND pay_plan_end = "" THEN
+			EMSetCursor PAPD_row, 30
+			transmit
+			
+			CALL find_variable("TTl Amt: ", ttl_due, 13)
+				ttl_due = trim(ttl_due)
+			CALL find_variable("Delq Amt: ", delinquent, 13)
+				delinquent = trim(delinquent)
+			
+			PAPD = PAPD & "Remedy: " & papd_remedy & "; " & "Begin Date: " & pay_plan_begin & "; " & "Total Due: " & ttl_due & "; " & "Delinq. Amount: " & delinquent & ";"
+			
+			CALL go_to("B", 3, 29)
+		END IF
+		PAPD_row = PAPD_row + 1
+	LOOP UNTIL end_of_data = "End of Data"
+END FUNCTION
+	
 
 '--------------------------------------------------------------------------------------INWD--------------------------------------------------------------------------------------
 FUNCTION create_INWD_array
@@ -712,8 +694,8 @@ BeginDialog dialog_name, 0, 0, 296, 325, "CAFS"
     PushButton 195, 60, 30, 15, "PALC", PALC_button
     PushButton 225, 60, 30, 15, "PAPD", PAPD_button
     PushButton 255, 60, 30, 15, "SUDL", SUDL_button
-    OkButton 230, 335, 30, 15
-    CancelButton 260, 335, 30, 15
+	CheckBox 10, 90, 225, 10, "Check here to have PAPD information added to CAAD Note.", put_CAFS_into_CAAD_check
+
   GroupBox 10, 50, 280, 35, "Display Buttons"
   GroupBox 10, 5, 280, 35, "Navigation Buttons"
   GroupBox 150, 230, 40, 60, "Extra NAV"
@@ -730,13 +712,21 @@ BeginDialog dialog_name, 0, 0, 296, 325, "CAFS"
   Text 65, 165, 75, 10, "PA Arrears"
   Text 15, 205, 35, 10, "Results: "
   EditBox 55, 200, 235, 15, review_result
-  CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
-  CheckBox 15, 245, 120, 10, "Send Address Verification", addr_verif_check
-  CheckBox 15, 255, 120, 10, "Send Non-Pay", non_pay_check
-    PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
-    PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
-    PushButton 155, 265, 30, 10, "MAXIS",MAXIS_nav_button
-    PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
+  CheckBox 15, 235, 115, 10, "Send Non-Compliance w/ DLPP", non_compliance_check
+  CheckBox 15, 245, 115, 10, "Send Address Verification", addr_verif_check
+  CheckBox 15, 255, 100, 10, "Send Non-Pay", non_pay_check
+  ButtonGroup ButtonPressed
+    PushButton 145, 240, 30, 10, "CAAD", CAAD_nav_button
+    PushButton 175, 240, 30, 10, "CAHL", CAHL_nav_button
+    PushButton 205, 240, 80, 10, "Check MAXIS for CASH", MAXIS_nav_button
+  Text 10, 285, 45, 10, "CAAD Code"
+  ComboBox 60, 280, 40, 15, ""+chr(9)+"E0001"+chr(9)+"E0002"+chr(9)+"E0003", caad_code
+  Text 125, 285, 85, 10, "Days Until Next Review"
+  ComboBox 210, 280, 40, 15, ""+chr(9)+"30"+chr(9)+"60"+chr(9)+"90", next_review
+  Text 10, 310, 65, 10, "Worker Signature"
+  EditBox 80, 305, 60, 15, worker_signature
+    OkButton 230, 305, 30, 15
+    CancelButton 260, 305, 30, 15
 EndDialog
 
 	ELSEIF dialog_name = "ENFL" THEN		'-------------------------------------------------------------------------------ENFL
@@ -760,26 +750,32 @@ BeginDialog dialog_name, 0, 0, 296, 325, "ENFL"
     PushButton 195, 60, 30, 15, "PALC", PALC_button
     PushButton 225, 60, 30, 15, "PAPD", PAPD_button
     PushButton 255, 60, 30, 15, "SUDL", SUDL_button
-    OkButton 230, 335, 30, 15
-    CancelButton 260, 335, 30, 15
-  GroupBox 10, 50, 280, 35, "Display Buttons"
-  GroupBox 10, 5, 280, 35, "Navigation Buttons"
-  GroupBox 150, 230, 40, 60, "Extra NAV"
-  GroupBox 10, 225, 130, 45, "DORD Docs"
-  Text 155, 105, 95, 10, ENFL_case_based
-  Text 155, 120, 95, 10, ENFL_person_based
-  Text 15, 205, 35, 10, "Results: "
-  EditBox 55, 200, 235, 15, review_result
-  CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
-  CheckBox 15, 245, 120, 10, "Send Address Verification", addr_verif_check
-  CheckBox 15, 255, 120, 10, "Send Non-Pay", non_pay_check
-    PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
-    PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
-    PushButton 155, 265, 30, 10, "MAXIS", MAXIS_nav_button
-    PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
-  Text 25, 105, 100, 10, "Case-Based Remedies:"
-  Text 25, 120, 100, 10, "Person-Based Remedies:"
-EndDialog
+	CheckBox 10, 90, 225, 10, "Check here to have PAPD information added to CAAD Note.", put_ENFL_into_CAAD_check
+
+	Text 155, 105, 95, 10, ENFL_case_based
+	Text 155, 120, 95, 10, ENFL_person_based
+		GroupBox 10, 50, 280, 35, "Display Buttons"
+			GroupBox 10, 5, 280, 35, "Navigation Buttons"
+			GroupBox 140, 225, 150, 45, "Extra NAV"
+			GroupBox 10, 225, 125, 45, "DORD Docs"
+			Text 15, 205, 35, 10, "Results: "
+			EditBox 55, 200, 235, 15, review_result
+			CheckBox 15, 235, 115, 10, "Send Non-Compliance w/ DLPP", non_compliance_check
+			CheckBox 15, 245, 115, 10, "Send Address Verification", addr_verif_check
+			CheckBox 15, 255, 100, 10, "Send Non-Pay", non_pay_check
+			ButtonGroup ButtonPressed
+				PushButton 145, 240, 30, 10, "CAAD", CAAD_nav_button
+				PushButton 175, 240, 30, 10, "CAHL", CAHL_nav_button
+				PushButton 205, 240, 80, 10, "Check MAXIS for CASH", MAXIS_nav_button
+			Text 10, 285, 45, 10, "CAAD Code"
+			ComboBox 60, 280, 40, 15, ""+chr(9)+"E0001"+chr(9)+"E0002"+chr(9)+"E0003", caad_code
+			Text 125, 285, 85, 10, "Days Until Next Review"
+			ComboBox 210, 280, 40, 15, ""+chr(9)+"30"+chr(9)+"60"+chr(9)+"90", next_review
+			Text 10, 310, 65, 10, "Worker Signature"
+			EditBox 80, 305, 60, 15, worker_signature
+				OkButton 230, 305, 30, 15
+				CancelButton 260, 305, 30, 15
+	EndDialog
 
 
 	ELSEIF dialog_name = "NCDD EDIT" THEN		'-------------------------------------------------------------------------------NCDD **EDIT MODE**
@@ -795,15 +791,27 @@ EndDialog
 			PushButton 225, 15, 30, 15, "PAPD", PAPD_nav_button
 			PushButton 255, 15, 30, 15, "SUDL", SUDL_nav_button
 			CancelButton 260, 205, 30, 15
-		GroupBox 10, 50, 280, 35, "Display Buttons"
-		GroupBox 10, 5, 280, 35, "Navigation Buttons"
-		GroupBox 150, 230, 40, 60, "Extra NAV"
-		GroupBox 10, 225, 130, 45, "DORD Docs"
-		Text 10, 35, 60, 10, "Address Known?"
-		EditBox 115, 35, 65, 15, addr_known
-		Text 10, 50, 75, 10, "Date Last Verified"
-		EditBox 115, 50, 65, 15, addr_date
-			PushButton 215, 50, 70, 15, "FINISHED EDITING", done_ncdd_edit_button
+			GroupBox 10, 50, 280, 35, "Display Buttons"
+			GroupBox 10, 5, 280, 35, "Navigation Buttons"
+			GroupBox 140, 225, 150, 45, "Extra NAV"
+			GroupBox 10, 225, 125, 45, "DORD Docs"
+			Text 15, 205, 35, 10, "Results: "
+			EditBox 55, 200, 235, 15, review_result
+			CheckBox 15, 235, 115, 10, "Send Non-Compliance w/ DLPP", non_compliance_check
+			CheckBox 15, 245, 115, 10, "Send Address Verification", addr_verif_check
+			CheckBox 15, 255, 100, 10, "Send Non-Pay", non_pay_check
+			ButtonGroup ButtonPressed
+				PushButton 145, 240, 30, 10, "CAAD", CAAD_nav_button
+				PushButton 175, 240, 30, 10, "CAHL", CAHL_nav_button
+				PushButton 205, 240, 80, 10, "Check MAXIS for CASH", MAXIS_nav_button
+			Text 10, 285, 45, 10, "CAAD Code"
+			ComboBox 60, 280, 40, 15, ""+chr(9)+"E0001"+chr(9)+"E0002"+chr(9)+"E0003", caad_code
+			Text 125, 285, 85, 10, "Days Until Next Review"
+			ComboBox 210, 280, 40, 15, ""+chr(9)+"30"+chr(9)+"60"+chr(9)+"90", next_review
+			Text 10, 310, 65, 10, "Worker Signature"
+			EditBox 80, 305, 60, 15, worker_signature
+			OkButton 230, 305, 30, 15
+			CancelButton 260, 305, 30, 15
 		EndDialog
 		
 	ELSEIF dialog_name = "NCDD" THEN		'-------------------------------------------------------------------------------NCDD
@@ -828,25 +836,33 @@ EndDialog
 			PushButton 225, 60, 30, 15, "PAPD", PAPD_button
 			PushButton 255, 60, 30, 15, "SUDL", SUDL_button
 			PushButton 250, 100, 30, 15, "EDIT", ncdd_edit_button
-    OkButton 230, 335, 30, 15
-    CancelButton 260, 335, 30, 15
-		Text 40, 105, 60, 10, "Address Known?"
+			CheckBox 10, 90, 225, 10, "Check here to have PAPD information added to CAAD Note.", put_NCDD_into_CAAD_check
+	
+		Text 15, 105, 60, 10, "Address Known?"
 		Text 145, 105, 65, 10, addr_known
-		Text 40, 120, 75, 10, "Date Last Verified"
+		Text 15, 120, 75, 10, "Date Last Verified"
 		Text 145, 120, 65, 10, addr_date
 		GroupBox 10, 50, 280, 35, "Display Buttons"
 		GroupBox 10, 5, 280, 35, "Navigation Buttons"
-		GroupBox 150, 230, 40, 60, "Extra NAV"
-		GroupBox 10, 225, 130, 45, "DORD Docs"
+		GroupBox 140, 225, 150, 45, "Extra NAV"
+		GroupBox 10, 225, 125, 45, "DORD Docs"
 		Text 15, 205, 35, 10, "Results: "
 		EditBox 55, 200, 235, 15, review_result
-		CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
-		CheckBox 15, 245, 120, 10, "Send Address Verification", addr_verif_check
-		CheckBox 15, 255, 120, 10, "Send Non-Pay", non_pay_check
-		PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
-		PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
-		PushButton 155, 265, 30, 10, "MAXIS",MAXIS_nav_button
-		PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
+		CheckBox 15, 235, 115, 10, "Send Non-Compliance w/ DLPP", non_compliance_check
+		CheckBox 15, 245, 115, 10, "Send Address Verification", addr_verif_check
+		CheckBox 15, 255, 100, 10, "Send Non-Pay", non_pay_check
+		ButtonGroup ButtonPressed
+			PushButton 145, 240, 30, 10, "CAAD", CAAD_nav_button
+			PushButton 175, 240, 30, 10, "CAHL", CAHL_nav_button
+			PushButton 205, 240, 80, 10, "Check MAXIS for CASH", MAXIS_nav_button
+		Text 10, 285, 45, 10, "CAAD Code"
+		ComboBox 60, 280, 40, 15, ""+chr(9)+"E0001"+chr(9)+"E0002"+chr(9)+"E0003", caad_code
+		Text 125, 285, 85, 10, "Days Until Next Review"
+		ComboBox 210, 280, 40, 15, ""+chr(9)+"30"+chr(9)+"60"+chr(9)+"90", next_review
+		Text 10, 310, 65, 10, "Worker Signature"
+		EditBox 80, 305, 60, 15, worker_signature
+		OkButton 230, 305, 30, 15
+		CancelButton 260, 305, 30, 15
 		EndDialog
 		
 	ELSEIF dialog_name = "PALC" THEN		'-------------------------------------------------------------------------------PALC
@@ -873,9 +889,8 @@ BeginDialog dialog_name, 0, 0, 296, 325, "PALC"
     PushButton 195, 60, 30, 15, "PALC", PALC_button
     PushButton 225, 60, 30, 15, "PAPD", PAPD_button
     PushButton 255, 60, 30, 15, "SUDL", SUDL_button
-    OkButton 230, 335, 30, 15
-    CancelButton 260, 335, 30, 15
-
+	CheckBox 10, 90, 225, 10, "Check here to have PAPD information added to CAAD Note.", put_PALC_into_CAAD_check
+	
 	FOR EACH PALC_part IN PALC_display
 		Text 40, PALC_dlg_row, 160, 10, PALC_part
 		PALC_dlg_row = PALC_dlg_row + 15
@@ -883,18 +898,25 @@ BeginDialog dialog_name, 0, 0, 296, 325, "PALC"
 	
   GroupBox 10, 50, 280, 35, "Display Buttons"
   GroupBox 10, 5, 280, 35, "Navigation Buttons"
-  GroupBox 150, 230, 40, 60, "Extra NAV"
-  GroupBox 10, 225, 130, 45, "DORD Docs"
+  GroupBox 140, 225, 150, 45, "Extra NAV"
+  GroupBox 10, 225, 125, 45, "DORD Docs"
   Text 15, 205, 35, 10, "Results: "
   EditBox 55, 200, 235, 15, review_result
-  CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
-  CheckBox 15, 245, 120, 10, "Send Address Verification", addr_verif_check
-  CheckBox 15, 255, 120, 10, "Send Non-Pay", non_pay_check
+  CheckBox 15, 235, 115, 10, "Send Non-Compliance w/ DLPP", non_compliance_check
+  CheckBox 15, 245, 115, 10, "Send Address Verification", addr_verif_check
+  CheckBox 15, 255, 100, 10, "Send Non-Pay", non_pay_check
   ButtonGroup ButtonPressed
-    PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
-    PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
-    PushButton 155, 265, 30, 10, "MAXIS", MAXIS_nav_button
-    PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
+    PushButton 145, 240, 30, 10, "CAAD", CAAD_nav_button
+    PushButton 175, 240, 30, 10, "CAHL", CAHL_nav_button
+    PushButton 205, 240, 80, 10, "Check MAXIS for CASH", MAXIS_nav_button
+  Text 10, 285, 45, 10, "CAAD Code"
+  ComboBox 60, 280, 40, 15, ""+chr(9)+"E0001"+chr(9)+"E0002"+chr(9)+"E0003", caad_code
+  Text 125, 285, 85, 10, "Days Until Next Review"
+  ComboBox 210, 280, 40, 15, ""+chr(9)+"30"+chr(9)+"60"+chr(9)+"90", next_review
+  Text 10, 310, 65, 10, "Worker Signature"
+  EditBox 80, 305, 60, 15, worker_signature
+    OkButton 230, 305, 30, 15
+    CancelButton 260, 305, 30, 15
 EndDialog		
 
 	ELSEIF dialog_name = "NCID" THEN			'-------------------------------------------------------------------------------NCID
@@ -921,31 +943,40 @@ ButtonGroup ButtonPressed
 	PushButton 195, 60, 30, 15, "PALC", PALC_button
 	PushButton 225, 60, 30, 15, "PAPD", PAPD_button
 	PushButton 255, 60, 30, 15, "SUDL", SUDL_button
-    OkButton 230, 335, 30, 15
-    CancelButton 260, 335, 30, 15
-	Text 10, 105, 125, 10, "Suppressed Enforcement Remedies:"
+	CheckBox 10, 90, 225, 10, "Check here to have PAPD information added to CAAD Note.", put_NCID_into_CAAD_check
 		
 	FOR EACH employer IN NCID_display
 		Text 40, NCID_dlg_row, 150, 10, employer	
 		NCID_dlg_row = NCID_dlg_row + 15
 	NEXT
 	
-	GroupBox 10, 50, 280, 35, "Display Buttons"
-	GroupBox 10, 5, 280, 35, "Navigation Buttons"
-	GroupBox 150, 230, 40, 60, "Extra NAV"
-	GroupBox 10, 225, 130, 45, "DORD Docs"
-	Text 15, 205, 35, 10, "Results: "
-	EditBox 55, 200, 235, 15, review_result
-	CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
-	CheckBox 15, 245, 120, 10, "Send Address Verification", addr_verif_check
-	CheckBox 15, 255, 120, 10, "Send Non-Pay", non_pay_check
-	PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
-	PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
-	PushButton 155, 265, 30, 10, "MAXIS",MAXIS_nav_button
-	PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
+  GroupBox 10, 50, 280, 35, "Display Buttons"
+  GroupBox 10, 5, 280, 35, "Navigation Buttons"
+  GroupBox 140, 225, 150, 45, "Extra NAV"
+  GroupBox 10, 225, 125, 45, "DORD Docs"
+  Text 15, 205, 35, 10, "Results: "
+  EditBox 55, 200, 235, 15, review_result
+  CheckBox 15, 235, 115, 10, "Send Non-Compliance w/ DLPP", non_compliance_check
+  CheckBox 15, 245, 115, 10, "Send Address Verification", addr_verif_check
+  CheckBox 15, 255, 100, 10, "Send Non-Pay", non_pay_check
+  ButtonGroup ButtonPressed
+    PushButton 145, 240, 30, 10, "CAAD", CAAD_nav_button
+    PushButton 175, 240, 30, 10, "CAHL", CAHL_nav_button
+    PushButton 205, 240, 80, 10, "Check MAXIS for CASH", MAXIS_nav_button
+  Text 10, 285, 45, 10, "CAAD Code"
+  ComboBox 60, 280, 40, 15, ""+chr(9)+"E0001"+chr(9)+"E0002"+chr(9)+"E0003", caad_code
+  Text 125, 285, 85, 10, "Days Until Next Review"
+  ComboBox 210, 280, 40, 15, ""+chr(9)+"30"+chr(9)+"60"+chr(9)+"90", next_review
+  Text 10, 310, 65, 10, "Worker Signature"
+  EditBox 80, 305, 60, 15, worker_signature
+    OkButton 230, 305, 30, 15
+    CancelButton 260, 305, 30, 15
 EndDialog		
 	ELSEIF dialog_name = "PAPD" THEN			'-------------------------------------------------------------------------------PAPD
-
+		PAPD_display = split(PAPD, ";")
+		PAPD_dlg_row = 110	
+		PAPD_dlg_col = 15
+	
 BeginDialog dialog_name, 0, 0, 296, 325, "PAPD"
   ButtonGroup ButtonPressed
     PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
@@ -966,7 +997,18 @@ BeginDialog dialog_name, 0, 0, 296, 325, "PAPD"
     PushButton 195, 60, 30, 15, "PALC", PALC_button
     PushButton 225, 60, 30, 15, "PAPD", PAPD_button
     PushButton 255, 60, 30, 15, "SUDL", SUDL_button
-  Text 10, 105, 145, 10, "PAPD is not completed yet. Sorry, Charlie."
+    CheckBox 10, 90, 225, 10, "Check here to have PAPD information added to CAAD Note.", put_PAPD_into_CAAD_check
+	
+
+	FOR EACH PAPD_info IN PAPD_display
+		Text PAPD_dlg_col, PAPD_dlg_row, 80, 10, PAPD_info
+		PAPD_dlg_row = PAPD_dlg_row + 15
+		IF PAPD_dlg_row = 170 THEN 
+			PAPD_dlg_row = 110
+			PAPD_dlg_col = PAPD_dlg_col + 90
+		END IF
+	NEXT
+	
   GroupBox 10, 50, 280, 35, "Display Buttons"
   GroupBox 10, 5, 280, 35, "Navigation Buttons"
   GroupBox 140, 225, 150, 45, "Extra NAV"
@@ -993,7 +1035,7 @@ EndDialog
 	
 	ELSEIF dialog_name = "SUDL" THEN			'-------------------------------------------------------------------------------SUDL
 		SUDL_display = split(SUDL, ";")
-		SUDL_dlg_row = 125
+		SUDL_dlg_row = 115
 	
 BeginDialog dialog_name, 0, 0, 296, 325, "SUDL"
 ButtonGroup ButtonPressed
@@ -1015,58 +1057,64 @@ ButtonGroup ButtonPressed
 	PushButton 195, 60, 30, 15, "PALC", PALC_button
 	PushButton 225, 60, 30, 15, "PAPD", PAPD_button
 	PushButton 255, 60, 30, 15, "SUDL", SUDL_button
-    OkButton 230, 335, 30, 15
-    CancelButton 260, 335, 30, 15
+    CheckBox 10, 90, 225, 10, "Check here to have PAPD information added to CAAD Note.", put_SUDL_into_CAAD_check
 	Text 10, 105, 125, 10, "Suppressed Enforcement Remedies:"
 		
 	FOR EACH enf_rem IN SUDL_display
-		Text 40, SUDL_dlg_row, 150, 10, enf_rem		
+		Text 15, SUDL_dlg_row, 150, 10, enf_rem		
 		SUDL_dlg_row = SUDL_dlg_row + 15
 	NEXT
 	
-	GroupBox 10, 50, 280, 35, "Display Buttons"
-	GroupBox 10, 5, 280, 35, "Navigation Buttons"
-	GroupBox 150, 230, 40, 60, "Extra NAV"
-	GroupBox 10, 225, 130, 45, "DORD Docs"
-	Text 15, 205, 35, 10, "Results: "
-	EditBox 55, 200, 235, 15, review_result
-	CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
-	CheckBox 15, 245, 120, 10, "Send Address Verification", addr_verif_check
-	CheckBox 15, 255, 120, 10, "Send Non-Pay", non_pay_check
-	PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
-	PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
-	PushButton 155, 265, 30, 10, "MAXIS",MAXIS_nav_button
-	PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
+  GroupBox 10, 50, 280, 35, "Display Buttons"
+  GroupBox 10, 5, 280, 35, "Navigation Buttons"
+  GroupBox 140, 225, 150, 45, "Extra NAV"
+  GroupBox 10, 225, 125, 45, "DORD Docs"
+  Text 15, 205, 35, 10, "Results: "
+  EditBox 55, 200, 235, 15, review_result
+  CheckBox 15, 235, 115, 10, "Send Non-Compliance w/ DLPP", non_compliance_check
+  CheckBox 15, 245, 115, 10, "Send Address Verification", addr_verif_check
+  CheckBox 15, 255, 100, 10, "Send Non-Pay", non_pay_check
+  ButtonGroup ButtonPressed
+    PushButton 145, 240, 30, 10, "CAAD", CAAD_nav_button
+    PushButton 175, 240, 30, 10, "CAHL", CAHL_nav_button
+    PushButton 205, 240, 80, 10, "Check MAXIS for CASH", MAXIS_nav_button
+  Text 10, 285, 45, 10, "CAAD Code"
+  ComboBox 60, 280, 40, 15, ""+chr(9)+"E0001"+chr(9)+"E0002"+chr(9)+"E0003", caad_code
+  Text 125, 285, 85, 10, "Days Until Next Review"
+  ComboBox 210, 280, 40, 15, ""+chr(9)+"30"+chr(9)+"60"+chr(9)+"90", next_review
+  Text 10, 310, 65, 10, "Worker Signature"
+  EditBox 80, 305, 60, 15, worker_signature
+    OkButton 230, 305, 30, 15
+    CancelButton 260, 305, 30, 15
 EndDialog
 
 	ELSEIF dialog_name = "LETL" THEN 			'-------------------------------------------------------------------------------LETL
 		LETL_display = split(LETL, ";")
 		LETL_dlg_row = 125
 	
-		BeginDialog dialog_name, 0, 0, 296, 325, "LETL"
-			ButtonGroup ButtonPressed
-				PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
-				PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
-				PushButton 75, 15, 30, 15, "INWD", INWD_nav_button
-				PushButton 105, 15, 30, 15, "LETL", LETL_nav_button
-				PushButton 135, 15, 30, 15, "NCDD", NCDD_nav_button
-				PushButton 165, 15, 30, 15, "NCID", NCID_nav_button
-				PushButton 195, 15, 30, 15, "PALC", PALC_nav_button
-				PushButton 225, 15, 30, 15, "PAPD", PAPD_nav_button
-				PushButton 255, 15, 30, 15, "SUDL", SUDL_nav_button
-				PushButton 15, 60, 30, 15, "CAFS", CAFS_button
-				PushButton 45, 60, 30, 15, "ENFL", ENFL_button
-				PushButton 75, 60, 30, 15, "INWD", INWD_button
-				PushButton 105, 60, 30, 15, "LETL", LETL_button
-				PushButton 135, 60, 30, 15, "NCDD", NCDD_button
-				PushButton 165, 60, 30, 15, "NCID", NCID_button
-				PushButton 195, 60, 30, 15, "PALC", PALC_button
-				PushButton 225, 60, 30, 15, "PAPD", PAPD_button
-				PushButton 255, 60, 30, 15, "SUDL", SUDL_button
-				OkButton 230, 335, 30, 15
-				CancelButton 260, 335, 30, 15
-			GroupBox 10, 50, 280, 35, "Display Buttons"
-			GroupBox 10, 5, 280, 35, "Navigation Buttons"
+BeginDialog dialog_name, 0, 0, 296, 325, "LETL"
+	ButtonGroup ButtonPressed
+		PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
+		PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
+		PushButton 75, 15, 30, 15, "INWD", INWD_nav_button
+		PushButton 105, 15, 30, 15, "LETL", LETL_nav_button
+		PushButton 135, 15, 30, 15, "NCDD", NCDD_nav_button
+		PushButton 165, 15, 30, 15, "NCID", NCID_nav_button
+		PushButton 195, 15, 30, 15, "PALC", PALC_nav_button
+		PushButton 225, 15, 30, 15, "PAPD", PAPD_nav_button
+		PushButton 255, 15, 30, 15, "SUDL", SUDL_nav_button
+		PushButton 15, 60, 30, 15, "CAFS", CAFS_button
+		PushButton 45, 60, 30, 15, "ENFL", ENFL_button
+		PushButton 75, 60, 30, 15, "INWD", INWD_button
+		PushButton 105, 60, 30, 15, "LETL", LETL_button
+		PushButton 135, 60, 30, 15, "NCDD", NCDD_button
+		PushButton 165, 60, 30, 15, "NCID", NCID_button
+		PushButton 195, 60, 30, 15, "PALC", PALC_button
+		PushButton 225, 60, 30, 15, "PAPD", PAPD_button
+		PushButton 255, 60, 30, 15, "SUDL", SUDL_button
+		CheckBox 10, 90, 225, 10, "Check here to have PAPD information added to CAAD Note.", put_LETL_into_CAAD_check
+	GroupBox 10, 50, 280, 35, "Display Buttons"
+	GroupBox 10, 5, 280, 35, "Navigation Buttons"
 
 			Text 10, 105, 125, 10, "Legal Tracking List:"
 			
@@ -1075,23 +1123,31 @@ EndDialog
 				LETL_dlg_row = LETL_dlg_row + 15
 			NEXT
 			
-			GroupBox 10, 50, 280, 35, "Display Buttons"
-			GroupBox 10, 5, 280, 35, "Navigation Buttons"
-			GroupBox 150, 230, 40, 60, "Extra NAV"
-			GroupBox 10, 225, 130, 45, "DORD Docs"
-			Text 15, 205, 35, 10, "Results: "
-			EditBox 55, 200, 235, 15, review_result
-			CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
-			CheckBox 15, 245, 120, 10, "Send Address Verification", 	addr_verif_check
-			CheckBox 15, 255, 120, 10, "Send Non-Pay", 					non_pay_check
-			PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
-			PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
-			PushButton 155, 265, 30, 10, "MAXIS",MAXIS_nav_button
-			PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
+  GroupBox 10, 50, 280, 35, "Display Buttons"
+  GroupBox 10, 5, 280, 35, "Navigation Buttons"
+  GroupBox 140, 225, 150, 45, "Extra NAV"
+  GroupBox 10, 225, 125, 45, "DORD Docs"
+  Text 15, 205, 35, 10, "Results: "
+  EditBox 55, 200, 235, 15, review_result
+  CheckBox 15, 235, 115, 10, "Send Non-Compliance w/ DLPP", non_compliance_check
+  CheckBox 15, 245, 115, 10, "Send Address Verification", addr_verif_check
+  CheckBox 15, 255, 100, 10, "Send Non-Pay", non_pay_check
+  ButtonGroup ButtonPressed
+    PushButton 145, 240, 30, 10, "CAAD", CAAD_nav_button
+    PushButton 175, 240, 30, 10, "CAHL", CAHL_nav_button
+    PushButton 205, 240, 80, 10, "Check MAXIS for CASH", MAXIS_nav_button
+  Text 10, 285, 45, 10, "CAAD Code"
+  ComboBox 60, 280, 40, 15, ""+chr(9)+"E0001"+chr(9)+"E0002"+chr(9)+"E0003", caad_code
+  Text 125, 285, 85, 10, "Days Until Next Review"
+  ComboBox 210, 280, 40, 15, ""+chr(9)+"30"+chr(9)+"60"+chr(9)+"90", next_review
+  Text 10, 310, 65, 10, "Worker Signature"
+  EditBox 80, 305, 60, 15, worker_signature
+    OkButton 230, 305, 30, 15
+    CancelButton 260, 305, 30, 15
 		EndDialog
 		
 	ELSEIF dialog_name = "INWD" THEN		'-------------------------------------------------------------------------------INWD
-		BeginDialog dialog_name, 0, 0, 296, 325, "LETL"
+		BeginDialog dialog_name, 0, 0, 296, 325, "INWD"
 			ButtonGroup ButtonPressed
 				PushButton 15, 15, 30, 15, "CAFS", CAFS_nav_button
 				PushButton 45, 15, 30, 15, "ENFL", ENFL_nav_button
@@ -1111,8 +1167,6 @@ EndDialog
 				PushButton 195, 60, 30, 15, "PALC", PALC_button
 				PushButton 225, 60, 30, 15, "PAPD", PAPD_button
 				PushButton 255, 60, 30, 15, "SUDL", SUDL_button
-	OkButton 230, 335, 30, 15
-    CancelButton 260, 335, 30, 15
   
 			FOR i = 0 TO (UBound(inwd_array,1))
 				INWD_dlg_col = 10
@@ -1184,17 +1238,25 @@ EndDialog
 			
 			GroupBox 10, 50, 280, 35, "Display Buttons"
 			GroupBox 10, 5, 280, 35, "Navigation Buttons"
-			GroupBox 150, 230, 40, 60, "Extra NAV"
-			GroupBox 10, 225, 130, 45, "DORD Docs"
+			GroupBox 140, 225, 150, 45, "Extra NAV"
+			GroupBox 10, 225, 125, 45, "DORD Docs"
 			Text 15, 205, 35, 10, "Results: "
 			EditBox 55, 200, 235, 15, review_result
-			CheckBox 15, 235, 120, 10, "Send Non-Compliance with DLPP", non_compliance_check
-			CheckBox 15, 245, 120, 10, "Send Address Verification", 	addr_verif_check
-			CheckBox 15, 255, 120, 10, "Send Non-Pay", 					non_pay_check
-			PushButton 155, 245, 30, 10, "CAAD", CAAD_nav_button
-			PushButton 155, 255, 30, 10, "CAHL", CAHL_nav_button
-			PushButton 155, 265, 30, 10, "MAXIS",MAXIS_nav_button
-			PushButton 155, 275, 30, 10, "MMIS", MMIS_nav_button
+			CheckBox 15, 235, 115, 10, "Send Non-Compliance w/ DLPP", non_compliance_check
+			CheckBox 15, 245, 115, 10, "Send Address Verification", addr_verif_check
+			CheckBox 15, 255, 100, 10, "Send Non-Pay", non_pay_check
+			ButtonGroup ButtonPressed
+				PushButton 145, 240, 30, 10, "CAAD", CAAD_nav_button
+				PushButton 175, 240, 30, 10, "CAHL", CAHL_nav_button
+				PushButton 205, 240, 80, 10, "Check MAXIS for CASH", MAXIS_nav_button
+			Text 10, 285, 45, 10, "CAAD Code"
+			ComboBox 60, 280, 40, 15, ""+chr(9)+"E0001"+chr(9)+"E0002"+chr(9)+"E0003", caad_code
+			Text 125, 285, 85, 10, "Days Until Next Review"
+			ComboBox 210, 280, 40, 15, ""+chr(9)+"30"+chr(9)+"60"+chr(9)+"90", next_review
+			Text 10, 310, 65, 10, "Worker Signature"
+			EditBox 80, 305, 60, 15, worker_signature
+				OkButton 230, 305, 30, 15
+				CancelButton 260, 305, 30, 15
 		EndDialog
 	END IF
 
@@ -1313,17 +1375,34 @@ CALL create_NCDD_variable(NCDD)
 CALL create_PALC_variable(PALC)
 CALL create_SUDL_variable(SUDL, 8)
 CALL create_NCID_variable(NCID)
+CALL create_PAPD_variable(PAPD)
 
 '-------------------------------------------------------------------------------The display.
 page_count = 0
 DO
-	IF page_count = 0 THEN CALL all_dialogs("MENU")
-	IF ButtonPressed = 0 THEN 
-		cancel_warning = MsgBox("Are you sure you want to cancel? Press YES to cancel. Press NO to return to the script.", vbYesNo)
-		IF cancel_warning = vbYes THEN stopscript
-	END IF
-	IF ButtonPressed <> 0 AND ButtonPressed <> -1 THEN CALL all_buttons(current_dlg)
-LOOP UNTIL ButtonPressed = -1
+	DO
+		error_message = ""
+		IF page_count = 0 THEN CALL all_dialogs("MENU")
+		IF ButtonPressed = 0 THEN 
+			cancel_warning = MsgBox("Are you sure you want to cancel? Press YES to cancel. Press NO to return to the script.", vbYesNo)
+			IF cancel_warning = vbYes THEN stopscript
+		END IF
+		IF ButtonPressed <> 0 AND ButtonPressed <> -1 THEN CALL all_buttons(current_dlg)
+		
+			'-----ERROR CHECKING: Validating the mandatory fields.-----
+			IF len(caad_code) > 5 AND ButtonPressed = -1 THEN error_message = error_message & vbCr & "You have entered an invalid CAAD Code."
+			IF worker_signature = "" AND ButtonPressed = -1 THEN error_message = error_message & vbCr & "Please sign your CAAD Code."
+			IF review_result = "" AND ButtonPressed = -1 THEN error_message = error_message & vbCr & "Please enter a result of your review."
+			IF (IsNumeric(next_review) = FALSE OR next_review = "") AND ButtonPressed = -1 THEN error_message = error_message & vbCr & "Please enter a number of days for the next review."
+			
+			IF error_message <> "" THEN
+				error_message = "ERROR!!" & vbCr & vbCr & error_message
+				MsgBox error_message
+				CALL all_dialogs(current_dlg)
+			END IF
+		
+	LOOP UNTIL ButtonPressed = -1 AND worker_signature <> ""
+LOOP UNTIL worker_signature <> "" AND len(caad_code) < 6 AND review_result <> "" AND IsNumeric(next_review) = TRUE 
 
 closing_message = ("CAAD Note..." & vbCr & "  * " & review_result & vbCr & vbCr & "Actions Taken...")
 		
@@ -1331,12 +1410,17 @@ IF non_compliance_check = 1 THEN closing_message = closing_message & vbCr & "  *
 IF addr_verif_check = 1 THEN closing_message = closing_message & vbCr & "  * Sent Address Request"
 IF non_pay_check = 1 THEN closing_message = closing_message & vbCr & "  * Sent F0104 for Non-Pay"
 
-
 MsgBox closing_message
+
 '-------------------------------------------------------------------------------Sending DORD docs.
-'IF non_compliance_check
-'IF addr_verif_check
-'IF non_pay_check
+'IF non_compliance_check = 1 THEN
+'	CALL navigate_to_PRISM_screen("DORD")
+'IF addr_verif_check = 1 THEN
+'	CALL navigate_to_PRISM_screen("DORD")
+'IF non_pay_check = 1 THEN
+'	CALL navigate_to_PRISM_screen("DORD")
+
+
 
 '-------------------------------------------------------------------------------The CAAD Note.
 'CALL navigate_to_PRISM_screen("CAAD")
