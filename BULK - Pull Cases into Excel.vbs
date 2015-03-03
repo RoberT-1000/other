@@ -3,7 +3,11 @@ name_of_script = "BULK - pull cases into Excel-revised"
 start_time = timer
 
 'LOADING ROUTINE FUNCTIONS FROM GITHUB REPOSITORY---------------------------------------------------------------------------
-url = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/master/MASTER%20FUNCTIONS%20LIBRARY.vbs"
+If beta_agency = "" or beta_agency = True then
+	url = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/BETA/MASTER%20FUNCTIONS%20LIBRARY.vbs"
+Else
+	url = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/master/MASTER%20FUNCTIONS%20LIBRARY.vbs"
+End if
 
 SET req = CreateObject("Msxml2.XMLHttp.6.0") 'Creates an object to get a URL
 req.open "GET", url, FALSE	'Attempts to open the URL
@@ -260,41 +264,45 @@ FUNCTION navigate_to_MAXIS(maxis_mode)
 END FUNCTION
 
 'DIALOGS----------------------------------------------------------------------------------------------------
-BeginDialog pull_cases_into_excel_dialog, 0, 0, 416, 180, "Pull cases into Excel dialog"
+BeginDialog pull_cases_into_excel_dialog, 0, 0, 416, 195, "Pull cases into Excel dialog"
   CheckBox 10, 20, 55, 10, "PREG exists?", preg_check
   CheckBox 10, 35, 90, 10, "All HH membs 19+?", all_HH_membs_19_plus_check
   CheckBox 10, 50, 90, 10, "Number of HH membs?", number_of_HH_membs_check
   CheckBox 10, 65, 90, 10, "ABAWD code", ABAWD_code_check
-  CheckBox 10, 80, 80, 10, "PDED/Rep-Payee", pded_check
-  CheckBox 10, 95, 95, 10, "MAGI%", magi_pct_check
-  CheckBox 10, 110, 85, 10, "FS and MFIP Review", FS_MF_review_check
-  CheckBox 10, 125, 95, 10, "Homeless Clients", homeless_check
-  CheckBox 10, 140, 105, 10, "MAEPD/Part B Reimbursable", maepd_check
-  CheckBox 10, 155, 70, 10, "All cases", all_cases_check
+  CheckBox 10, 80, 90, 10, "PDED/Guardianship Fee", guardianship_check
+  CheckBox 10, 95, 80, 10, "PDED/Rep-Payee", pded_check
+  CheckBox 10, 110, 95, 10, "MAGI%", magi_pct_check
+  CheckBox 10, 125, 85, 10, "FS and MFIP Review", FS_MF_review_check
+  CheckBox 10, 140, 95, 10, "Homeless Clients", homeless_check
+  CheckBox 10, 155, 105, 10, "MAEPD/Part B Reimbursable", maepd_check
+  CheckBox 10, 170, 70, 10, "All cases", all_cases_check
   DropListBox 180, 15, 95, 10, "REPT/PND2"+chr(9)+"REPT/ACTV", screen_to_use
   EditBox 190, 30, 90, 15, x_number
   CheckBox 125, 50, 295, 15, "Check here if you're running this for all staff (WARNING: this could take several hours)", all_workers_check
   ButtonGroup ButtonPressed
     OkButton 365, 10, 50, 15
     CancelButton 365, 30, 50, 15
-  GroupBox 5, 5, 115, 165, "Additional items to log"
+  GroupBox 5, 5, 115, 185, "Additional items to log"
   Text 125, 15, 50, 10, "Screen to use:"
   Text 125, 35, 60, 10, "Worker to check:"
 EndDialog
 
-BeginDialog gen_worker_dialog, 0, 0, 291, 110, "Pull cases into Excel dialog"
+
+BeginDialog gen_worker_dialog, 0, 0, 291, 125, "Pull cases into Excel dialog"
   CheckBox 10, 20, 55, 10, "PREG exists?", preg_check
   CheckBox 10, 35, 90, 10, "ABAWD code", ABAWD_code_check
-  CheckBox 10, 50, 80, 10, "PDED/Rep-Payee", pded_check
-  CheckBox 10, 65, 85, 10, "Homeless Clients", homeless_check
-  CheckBox 10, 80, 105, 10, "MA-EPD/Part B Reimbursable", maepd_check
+  CheckBox 10, 50, 100, 10, "PDED/Guardianship Fee", guardianship_check
+  CheckBox 10, 65, 80, 10, "PDED/Rep-Payee", pded_check
+  CheckBox 10, 80, 85, 10, "Homeless Clients", homeless_check
+  CheckBox 10, 95, 105, 10, "MA-EPD/Part B Reimbursable", maepd_check
   DropListBox 185, 15, 95, 10, "REPT/PND2"+chr(9)+"REPT/ACTV", screen_to_use
   ButtonGroup ButtonPressed
     OkButton 175, 50, 50, 15
     CancelButton 230, 50, 50, 15
   Text 130, 15, 50, 10, "Screen to use:"
-  GroupBox 5, 5, 120, 90, "Additional items to log"
+  GroupBox 5, 10, 120, 100, "Additional items to log"
 EndDialog
+
 
 
 'THE SCRIPT----------------------------------------------------------------------------------------------------
@@ -381,6 +389,11 @@ If ABAWD_code_check = 1 then
 	ABAWD_code_col = col_to_use
 	col_to_use = col_to_use + 1
 End if
+IF guardianship_check = 1 THEN
+	objExcel.Cells(1, col_to_use).Value = "Guardianship Fee"
+	guard_col = col_to_use
+	col_to_use = col_to_use + 1
+END IF
 IF pded_check = 1 THEN
 	ObjExcel.Cells(1, col_to_use).Value = "PDED/Rep-Payee"
 	pded_col = col_to_use
@@ -614,10 +627,12 @@ Do
 		End IF
 	End if
 
-	IF pded_check = 1 THEN
-		total_pded = ""
-		pded_hh_array = ""
+	IF pded_check = 1 OR guardianship_check = 1 THEN
 		call navigate_to_screen("STAT", "PDED")
+			total_pded = ""
+			pded_hh_array = ""
+			guardianship = ""
+
 			errr_screen_check
 			pded_row = 5
 			DO
@@ -638,23 +653,45 @@ Do
 				rep_payee_amt = ""
 				EMWriteScreen hh_memb, 20, 76
 				transmit
-					EMReadScreen rep_payee_amt, 8, 15, 70
+				
+				EMReadScreen guardianship_amt, 8, 15, 44
+				guardianship_amt = replace(guardianship_amt, "_", "")
+				guardianship_amt = replace(guardianship_amt, " ", "")
+
+				EMReadScreen rep_payee_amt, 8, 15, 70
 				rep_payee_amt = replace(rep_payee_amt, "_", "")
 				rep_payee_amt = replace(rep_payee_amt, " ", "")
+
+				IF guardianship_amt <> "" THEN
+					guardianship_info = hh_memb & ": " & guardianship_amt & "; "
+					guardianship = guardianship & guardianship_info
+				END IF
+
 				IF rep_payee_amt <> "" THEN
 					pded_info = hh_memb & ": " & rep_payee_amt & "; "
 					total_pded = total_pded & pded_info
 				END IF
 			NEXT
-
-			ObjExcel.Cells(excel_row, PDED_col).Value = total_pded
-			'THE FOLLOWING 5 LINES AUTOMATICALLY DELETE ANY BLANK RESULTS
-			IF total_pded = "" THEN
-				Set objRange = objExcel.Cells(excel_row, 1).EntireRow
-				objRange.Delete
-				excel_row = excel_row - 1
+			
+			IF guardianship_check = 1 THEN
+				ObjExcel.Cells(excel_row, guard_col).Value = guardianship
+				'THE FOLLOWING 5 LINES AUTOMATICALLY DELETE ANY BLANK RESULTS
+				IF guardianship = "" THEN
+					Set objRange = objExcel.Cells(excel_row, 1).EntireRow
+					objRange.Delete
+					excel_row = excel_row - 1
+				END IF
 			END IF
 
+			IF pded_check = 1 THEN
+				ObjExcel.Cells(excel_row, PDED_col).Value = total_pded
+				'THE FOLLOWING 5 LINES AUTOMATICALLY DELETE ANY BLANK RESULTS
+				IF total_pded = "" THEN
+					Set objRange = objExcel.Cells(excel_row, 1).EntireRow
+					objRange.Delete
+					excel_row = excel_row - 1
+				END IF
+			END IF
 	END IF
 
 	IF magi_pct_check = 1 THEN
