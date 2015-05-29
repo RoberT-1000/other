@@ -1,0 +1,116 @@
+'LOADING GLOBAL VARIABLES--------------------------------------------------------------------
+'Set run_another_script_fso = CreateObject("Scripting.FileSystemObject")
+'Set fso_command = run_another_script_fso.OpenTextFile("Q:\Blue Zone Scripts\Public assistance script files\Script Files\SETTINGS - GLOBAL VARIABLES.vbs")
+'text_from_the_other_script = fso_command.ReadAll
+'fso_command.Close
+'Execute text_from_the_other_script
+
+worker_phone = "763-422-7200"
+
+'LOADING ROUTINE FUNCTIONS FROM GITHUB REPOSITORY---------------------------------------------------------------------------
+If beta_agency = "" or beta_agency = True then
+	url = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/BETA/MASTER%20FUNCTIONS%20LIBRARY.vbs"
+Else
+	url = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/master/MASTER%20FUNCTIONS%20LIBRARY.vbs"
+End if
+SET req = CreateObject("Msxml2.XMLHttp.6.0")				'Creates an object to get a URL
+req.open "GET", url, FALSE									'Attempts to open the URL
+req.send													'Sends request
+IF req.Status = 200 THEN									'200 means great success
+	Set fso = CreateObject("Scripting.FileSystemObject")	'Creates an FSO
+	Execute req.responseText								'Executes the script code
+ELSE														'Error message, tells user to try to reach github.com, otherwise instructs to contact Veronica with details (and stops script).
+	MsgBox 	"Something has gone wrong. The code stored on GitHub was not able to be reached." & vbCr &_ 
+			vbCr & _
+			"Before contacting Veronica Cary, please check to make sure you can load the main page at www.GitHub.com." & vbCr &_
+			vbCr & _
+			"If you can reach GitHub.com, but this script still does not work, ask an alpha user to contact Veronica Cary and provide the following information:" & vbCr &_
+			vbTab & "- The name of the script you are running." & vbCr &_
+			vbTab & "- Whether or not the script is ""erroring out"" for any other users." & vbCr &_
+			vbTab & "- The name and email for an employee from your IT department," & vbCr & _
+			vbTab & vbTab & "responsible for network issues." & vbCr &_
+			vbTab & "- The URL indicated below (a screenshot should suffice)." & vbCr &_
+			vbCr & _
+			"Veronica will work with your IT department to try and solve this issue, if needed." & vbCr &_ 
+			vbCr &_
+			"URL: " & url
+			script_end_procedure("Script ended due to error connecting to GitHub.")
+END IF
+
+BeginDialog cei_dlg, 0, 0, 316, 220, "CEI Info Needed"
+  EditBox 70, 5, 80, 15, cl_name
+  EditBox 70, 25, 80, 15, addr_line1
+  EditBox 70, 45, 80, 15, addr_line2
+  EditBox 235, 5, 75, 15, mnsure_case_number
+  EditBox 235, 25, 75, 15, docs_due_date
+  CheckBox 15, 80, 275, 10, "Have your employer complete CEI Form (DHS-2841)", cei_form_check
+  CheckBox 15, 95, 275, 10, "Send a copy of the front and back of any insurance cards.", insa_cards_check
+  CheckBox 15, 110, 275, 10, "Send paystubs or other proof of health premium payment made in past 30 days", prf_of_pay_check
+  CheckBox 15, 125, 275, 10, "Send 12 months of EOB from insurance company", eob_check
+  CheckBox 15, 140, 275, 10, "Send the Summary of Benefits for the plan(s) offered and costs for each plan", summ_of_bene_check
+  EditBox 75, 170, 75, 15, worker_signature
+  EditBox 235, 170, 70, 15, worker_phone
+  ButtonGroup ButtonPressed
+    OkButton 210, 200, 50, 15
+    CancelButton 260, 200, 50, 15
+  Text 10, 10, 20, 10, "Name"
+  Text 170, 10, 55, 10, "MNSure Case #"
+  Text 10, 30, 50, 10, "Address Line 1"
+  GroupBox 5, 70, 305, 90, "Information needed from the client"
+  Text 10, 175, 60, 10, "Worker Signature"
+  Text 170, 30, 60, 10, "Docs Due Date"
+  Text 175, 175, 60, 10, "Worker Phone"
+  Text 10, 50, 55, 10, "Address Line 2"
+EndDialog
+
+Dialog cei_dlg
+	IF ButtonPressed = 0 THEN stopscript
+
+'Now it loads the form.
+Set objWord = CreateObject("Word.Application")
+objWord.Visible = true
+set objDoc = objWord.Documents.Add(word_doc_location)
+
+With objDoc
+	.FormFields("CLName").Result = cl_name                      ' .FormFields("CLName").Result is throwing the value for cl_name found in the dialog into the form field "CLName"
+	.FormFields("addr_line1").Result = addr_line1
+	.FormFields("addr_line2").Result = addr_line2
+	.FormFields("mnsure_case_number").Result = mnsure_case_number
+	.FormFields("docs_due_date").Result = docs_due_date
+	.FormFields("worker_signature").Result = worker_signature
+	.FormFields("worker_phone").Result = worker_phone
+End With
+	
+IF cei_form_check = 1 THEN 
+	With objDoc
+		.FormFields("cei_form_check").CheckBox.Value = True
+	End With
+END IF
+
+IF insa_cards_check = 1 THEN
+	With objDoc
+		.FormFields("insa_cards_check").CheckBox.Value = True
+	End With
+END IF
+
+IF prf_of_pay_check = 1 THEN
+	With objDoc
+		.FormFields("prf_of_pay_check").CheckBox.Value = True
+	End With
+END IF
+
+IF eob_check = 1 THEN
+	With objDoc
+		.FormFields("eob_check").CheckBox.Value = True
+	End With
+END IF
+
+IF summ_of_bene_check = 1 THEN
+	With objDoc
+		.FormFields("summ_of_bene_check").CheckBox.Value = True
+	End With
+END IF
+
+double_check = MsgBox("Print the form?",vbYesNo)
+
+IF double_check = vbYes THEN objDoc.PrintOut()
