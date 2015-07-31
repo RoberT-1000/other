@@ -94,7 +94,7 @@ Loop until buttonpressed <> SIR_instructions_button
 'Connecting to BlueZone
 EMConnect ""
 
-If buttonpressed = BILS_UPDATER_button then call run_from_GitHub(script_repository & "/ACTIONS/ACTIONS - BILS UPDATER.vbs")
+If buttonpressed = BILS_UPDATER_button then call run_from_GitHub("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/bils%20updater.vbs")
 If buttonpressed = CHECK_EDRS_button then call run_from_GitHub(script_repository & "/ACTIONS/ACTIONS - CHECK EDRS.vbs")
 If buttonpressed = COPY_PANELS_TO_WORD_button then call run_from_GitHub(script_repository & "/ACTIONS/ACTIONS - COPY PANELS TO WORD.vbs")
 If buttonpressed = LTC_SPOUSAL_ALLOCATION_FIATER_button then call run_from_GitHub(script_repository & "/ACTIONS/ACTIONS - LTC - SPOUSAL ALLOCATION FIATER.vbs")
