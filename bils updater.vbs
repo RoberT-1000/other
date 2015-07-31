@@ -280,7 +280,12 @@ Do
 Loop until dialog_validation_complete = True
  
 call navigate_to_MAXIS_screen("stat", "bils") 'In case the worker navigated out.
-Call create_panel_if_nonexistent()
+EMReadScreen number_of_BILS_panels, 1, 2, 78
+IF number_of_BILS_panels = "0" THEN 
+	CALL write_value_and_transmit("NN", 20, 79)
+ELSE
+	PF9
+END IF
 
 'Cleaning up date field
 budget_begin = replace(budget_begin, ".", "/")		'in case worker used periods instead of slashes
@@ -292,9 +297,6 @@ budget_end = replace(budget_end, "-", "/")
 budget_begin = replace(budget_begin, "/", "/01/")
 budget_end = replace(budget_end, "/", "/01/")
 
-
-'Edits panel
-'PF9
 
 'Using working_date as a variable, it will now determine each footer month between the budget period start and end
 working_date = budget_begin											'starting with the first month
