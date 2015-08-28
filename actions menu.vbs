@@ -106,7 +106,7 @@ If buttonpressed = PAYSTUBS_RECEIVED_button then call run_from_GitHub("https://r
 If buttonpressed = SEND_SVES_button then call run_from_GitHub(script_repository & "/ACTIONS/ACTIONS - SEND SVES.vbs")
 If buttonpressed = TRANSFER_CASE_button then call run_from_GitHub(script_repository & "/ACTIONS/ACTIONS - TRANSFER CASE.vbs")
 If ButtonPressed = UPDATE_WORKER_SIGNATURE_button then call run_from_GitHub(script_repository & "/ACTIONS/ACTIONS - UPDATE WORKER SIGNATURE.vbs")
-IF ButtonPressed = eval_nocs_button THEN CALL run_from_GitHub(script_repository & "EVAL NOCS.vbs"
+IF ButtonPressed = eval_nocs_button THEN CALL run_from_GitHub(script_repository & "EVAL NOCS.vbs")
 
 'Logging usage stats
 script_end_procedure("If you see this, it's because you clicked a button that, for some reason, does not have an outcome in the script. Contact your alpha user to report this bug. Thank you!")
