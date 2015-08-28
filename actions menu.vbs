@@ -48,10 +48,10 @@ END IF
 
 
 'DIALOGS----------------------------------------------------------------------------------------------------
-BeginDialog ACTIONS_scripts_main_menu_dialog, 0, 0, 456, 215, "Actions scripts main menu dialog"
+BeginDialog ACTIONS_scripts_main_menu_dialog, 0, 0, 456, 245, "Actions scripts main menu dialog"
   ButtonGroup ButtonPressed
-    CancelButton 400, 195, 50, 15
-	PushButton 375, 10, 65, 10, "SIR instructions", SIR_instructions_button
+    CancelButton 400, 225, 50, 15
+    PushButton 375, 10, 65, 10, "SIR instructions", SIR_instructions_button
     PushButton 5, 20, 50, 10, "BILS updater", BILS_UPDATER_button
     PushButton 5, 35, 50, 10, "Check EDRS", CHECK_EDRS_button
     PushButton 5, 50, 75, 10, "Copy panels to Word", COPY_PANELS_TO_WORD_button
@@ -63,6 +63,7 @@ BeginDialog ACTIONS_scripts_main_menu_dialog, 0, 0, 456, 215, "Actions scripts m
     PushButton 5, 160, 45, 10, "Send SVES", SEND_SVES_button
     PushButton 5, 175, 55, 10, "Transfer case", TRANSFER_CASE_button
     PushButton 5, 200, 85, 10, "Update worker signature", UPDATE_WORKER_SIGNATURE_button
+    PushButton 5, 215, 50, 10, "Eval NOCS", eval_nocs_button
   Text 5, 5, 245, 10, "Action scripts main menu: select the script to run from the choices below."
   Text 60, 20, 215, 10, "--- Updates a BILS panel with reoccurring or actual BILS received."
   Text 60, 35, 185, 10, "--- sends an EDRS request for a HH member on a case."
@@ -75,7 +76,9 @@ BeginDialog ACTIONS_scripts_main_menu_dialog, 0, 0, 456, 215, "Actions scripts m
   Text 55, 160, 90, 10, "--- Sends a SVES/QURY."
   Text 65, 175, 380, 20, "--- SPEC/XFERs a case, and can send a memo to the new client. For in-agency as well as between agencies (out-of-county XFERs)."
   Text 95, 200, 185, 10, "--- Updates the default worker signature on your scripts."
+  Text 65, 215, 225, 10, "-- Notice of Continued Services"
 EndDialog
+
 
 'Variables to declare
 IF script_repository = "" THEN script_repository = "https://raw.githubusercontent.com/MN-Script-Team/DHS-MAXIS-Scripts/master/Script Files"		'If it's blank, we're assuming the user is a scriptwriter, ergo, master branch.
@@ -88,8 +91,6 @@ Do
 	If buttonpressed = cancel then stopscript
 	If buttonpressed = SIR_instructions_button then CreateObject("WScript.Shell").Run("https://www.dhssir.cty.dhs.state.mn.us/MAXIS/blzn/scriptwiki/Wiki%20Pages/Actions%20scripts.aspx")
 Loop until buttonpressed <> SIR_instructions_button
-
-
 
 'Connecting to BlueZone
 EMConnect ""
@@ -105,6 +106,7 @@ If buttonpressed = PAYSTUBS_RECEIVED_button then call run_from_GitHub("https://r
 If buttonpressed = SEND_SVES_button then call run_from_GitHub(script_repository & "/ACTIONS/ACTIONS - SEND SVES.vbs")
 If buttonpressed = TRANSFER_CASE_button then call run_from_GitHub(script_repository & "/ACTIONS/ACTIONS - TRANSFER CASE.vbs")
 If ButtonPressed = UPDATE_WORKER_SIGNATURE_button then call run_from_GitHub(script_repository & "/ACTIONS/ACTIONS - UPDATE WORKER SIGNATURE.vbs")
+IF ButtonPressed = eval_nocs_button THEN CALL run_from_GitHub(script_repository & "EVAL NOCS.vbs"
 
 'Logging usage stats
 script_end_procedure("If you see this, it's because you clicked a button that, for some reason, does not have an outcome in the script. Contact your alpha user to report this bug. Thank you!")
