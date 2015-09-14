@@ -141,7 +141,7 @@ transmit
 'The following will select the correct version of MMIS. First it looks for C302, then EK01, then C402.
 row = 1
 col = 1
-EMSearch "C302", row, col
+EMSearch ("C3" & RIGHT(worker_county_code, 2)), row, col
 If row <> 0 then 
   If row <> 1 then 'It has to do this in case the worker only has one option (as many LTC and OSA workers don't have the option to decide between MAXIS and MCRE case access). The MMIS screen will show the text, but it's in the first row in these instances.
     EMWriteScreen "x", row, 4
@@ -159,7 +159,7 @@ Else 'Some staff may only have EK01 (MMIS MCRE). The script will allow workers t
   Else 'Some OSAs have C402 (limited access). This will search for that.
     row = 1
     col = 1
-    EMSearch "C402", row, col
+    EMSearch ("C4" & RIGHT(worker_county_code, 2)), row, col
     If row <> 0 then 
       If row <> 1 then
         EMWriteScreen "x", row, 4
