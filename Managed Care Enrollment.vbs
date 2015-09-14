@@ -1,3 +1,9 @@
+'LOADING GLOBAL VARIABLES--------------------------------------------------------------------
+Set run_another_script_fso = CreateObject("Scripting.FileSystemObject")
+Set fso_command = run_another_script_fso.OpenTextFile("Q:\Blue Zone Scripts\Public assistance script files\Script Files\SETTINGS - GLOBAL VARIABLES.vbs")
+text_from_the_other_script = fso_command.ReadAll
+fso_command.Close
+Execute text_from_the_other_script
 
 'STATS GATHERING----------------------------------------------------------------------------------------------------
 name_of_script = "Action - Managed Care Enrollment"
@@ -96,16 +102,9 @@ BeginDialog correct_REFM_check, 0, 0, 191, 105, "REFM check"
   Text 25, 15, 130, 35, "Please verify that the information entered is correct then click OK. If the information was entered incorrectly hit cancel and start the script again. "
 EndDialog
 
-
-
-
-
 'SCRIPT----------------------------------------------------------------------------------------------------
 
 EMConnect "A" 'Forces worker to use S1 session fo the script
-
-
-
 
 attn
 EMReadScreen MMIS_A_check, 7, 15, 15 
