@@ -1,3 +1,6 @@
+"Note to any script writers looking to edit this. MMIS is always active. If you program any errors in to this script it will affect people's HC benefits
+'Before this script is used life you MUST test it every possible scenario for errors in Maxis training 3 and MMIS training 11. You will need to code the script to do this.
+'Any use of this code is at your own risk. Anoka County is not responsible for any use of this code outside of the Anoka county agency. Anoka County script writers will be unavailable to debug issues regarding modification of this code. 
 'LOADING GLOBAL VARIABLES--------------------------------------------------------------------
 Set run_another_script_fso = CreateObject("Scripting.FileSystemObject")
 Set fso_command = run_another_script_fso.OpenTextFile("Q:\Blue Zone Scripts\Public assistance script files\Script Files\SETTINGS - GLOBAL VARIABLES.vbs")
@@ -103,6 +106,8 @@ BeginDialog correct_REFM_check, 0, 0, 191, 105, "REFM check"
 EndDialog
 
 'SCRIPT----------------------------------------------------------------------------------------------------
+
+If worker_county_code <> "x102" then msgbox "This script was written specifically for Anoka County. You will need to have a script writer modify and test the code before it can be used in another county."
 
 EMConnect "A" 'Forces worker to use S1 session fo the script
 
