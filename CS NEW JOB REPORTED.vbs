@@ -190,6 +190,10 @@ transmit
 'Navigating to case note and creating a new case note
 start_a_blank_CASE_NOTE
 
+'delete lines 193 thorugh 195 after testing
+confirm_msg = MsgBox("The script should have created a blank case note. If it has, press OK to continue, if it has not, press CANCEL to stop the script.", vbOKCancel)
+IF confirm_msg = vbCancel THEN stopscript
+
 'Sending case note
 EMSendKey "CS REPORTED: NEW EMPLOYER FOR CAREGIVER REF NBR: " & HH_memb & " " & employer & "<newline>" 
 EMSendKey "---" & "<newline>"
@@ -210,6 +214,11 @@ EMSetCursor 9, 3
 
 'Sending TIKL
 EMSendKey "Verification of new employer (via CS message) should have returned by now. If not received and processed, take appropriate action. (TIKL auto-generated from script)."
+
+'delete lines 218 through 220 after testing
+confirm_msg = MsgBox("The script should have written a TIKL. If it has written a TIKL at current date plus 10, press OK for the script to send the TIKL and continue. If it has not, press CANCEL for the script to stop.", vbOKCancel)
+IF confirm_msg = vbCancel THEN stopscript
+
 transmit
 PF3
 
