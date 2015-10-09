@@ -81,33 +81,5 @@ FOR i = 2 to 2692
 	run_time = current_time - start_time
 	objExplorer.Document.Body.InnerHTML = "The script is finding the MAXIS workers. It is " & FormatPercent((i - 1)/2692) & " complete. Current run time = " & run_time & " seconds."
 NEXT
+MsgBox "Success!!"
 
-objExplorer.Quit
-
-
-stopscript
-
-FOR i = 2 to 219
-	mnsure_case_number = ""
-	maxis_case_number = objExcel.Cells(i, 2).Value
-	
-	objExcel.Worksheets("All Cases With MAXIS").Activate
-	excel_row = 2
-	DO
-		IF objExcel.Cells(excel_row, 12).Value = maxis_case_number THEN 
-			IF mnsure_case_number = "" THEN
-				mnsure_case_number = objExcel.Cells(excel_row, 3).Value
-			ELSE
-				mnsure_case_number = mnsure_case_number & ", " & objExcel.Cells(excel_row, 3).Value
-			END IF
-		END IF
-		current_time = timer
-		run_time = current_time - start_time
-		objExplorer.Document.Body.InnerHTML = "The script is finding the MAXIS workers. It is " & FormatPercent((i - 1)/218) & " complete. Current run time = " & run_time & " seconds."
-		excel_row = excel_row + 1
-	LOOP UNTIL excel_row = 6000
-	objExcel.Worksheets("Family 1").Activate
-	objExcel.Cells(i, 1).Value = mnsure_case_number
-NEXT
-
-objExplorer.Quit
