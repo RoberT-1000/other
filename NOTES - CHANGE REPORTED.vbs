@@ -101,20 +101,20 @@ EndDialog
 
 BeginDialog HHLD_Comp_Change_Dialog, 0, 0, 291, 175, "Household Comp Change"
   Text 5, 15, 50, 10, "Case Number"
-  EditBox 60, 10, 100, 15, Case_Number
+  EditBox 60, 10, 100, 15, case_number
   Text 5, 35, 80, 10, "Unit Member HH Change"
-  EditBox 90, 30, 45, 15, HH_Member
+  EditBox 90, 30, 45, 15, HH_member
   Text 5, 55, 85, 10, "Date Reported/Addendum"
-  EditBox 95, 50, 60, 15, Date_Reported
+  EditBox 95, 50, 60, 15, date_reported
   Text 165, 55, 45, 10, "Effective Date"
-  EditBox 215, 50, 70, 15, Effective_Date
-  CheckBox 110, 70, 100, 10, "Is the change temporary?", Temporary_Change_Checkbox
+  EditBox 215, 50, 70, 15, effective_date
+  CheckBox 110, 70, 100, 10, "Is the change temporary?", temporary_change_checkbox
   Text 10, 90, 45, 10, "Action Taken"
-  EditBox 60, 85, 225, 15, actions_Taken
+  EditBox 60, 85, 225, 15, actions_taken
   Text 5, 110, 60, 10, "Additional Notes"
-  EditBox 60, 105, 225, 15, Additional_Notes
+  EditBox 60, 105, 225, 15, additional_notes
   Text 10, 130, 45, 15, "Worker Name"
-  EditBox 60, 125, 100, 15, Worker_signature
+  EditBox 60, 125, 100, 15, worker_signature
   ButtonGroup ButtonPressed
     OkButton 15, 150, 50, 15
     CancelButton 230, 150, 50, 15
@@ -165,7 +165,7 @@ DO
 	IF date_of_birth = "" THEN err_msg = err_msg & vbNewLine &  "You must enter a birth date"
 	IF SSN = "" THEN err_msg = err_msg & vbNewLine &  "You must enter baby's Social Security Number"
 	IF fathers_name = "" THEN err_msg = err_msg & vbNewLine &  "You must enter Father's name"
-	IF actions_Taken = "" THEN err_msg = err_msg & vbNewLine & "You must enter the actions taken"
+	IF actions_taken = "" THEN err_msg = err_msg & vbNewLine & "You must enter the actions taken"
 	IF worker_signature = "" THEN err_msg = err_msg & vbNewLine & "Please sign your note"
 	IF err_msg <> "" THEN msgbox "*** Notice!!! ***" & vbNewLine & err_msg
 LOOP UNTIL err_msg = ""
@@ -179,11 +179,11 @@ DO
 	err_msg = ""
 	DIALOG HHLD_Comp_Change_Dialog
 	cancel_confirmation
-	IF Case_Number = "" THEN err_msg = "You must enter case number!"
+	IF case_number = "" THEN err_msg = "You must enter case number!"
 	IF HH_Member = "" THEN err_msg = err_msg & vbNewLine & "You must enter a HH Member"
-	IF Date_Reported = "" THEN err_msg = err_msg & vbNewLine & "You must enter date reported"
-	IF Effective_Date = "" THEN err_msg = err_msg & vbNewLine & "You must enter effective date"
-	IF Actions_Taken = "" THEN err_msg = err_msg & vbNewLine & "You must enter the actions taken"
+	IF date_reported = "" THEN err_msg = err_msg & vbNewLine & "You must enter date reported"
+	IF effective_date = "" THEN err_msg = err_msg & vbNewLine & "You must enter effective date"
+	IF actions_taken = "" THEN err_msg = err_msg & vbNewLine & "You must enter the actions taken"
 	IF worker_signature = "" THEN err_msg = err_msg & vbNewLine & "Please sign your note"
 	IF err_msg <> "" THEN msgbox "*** Notice!!! ***" & vbNewLine & err_msg
 LOOP UNTIL err_msg = ""
