@@ -53,7 +53,7 @@ STATS_denomination = "C"       		'C is for each CASE
 'END OF stats block=========================================================================================================
 
 'Initial Dialog Box
-BeginDialog Dialog1, 0, 0, 171, 105, "Change Reported"
+BeginDialog Change_reported_dialog, 0, 0, 171, 105, "Change Reported"
   ButtonGroup ButtonPressed
     OkButton 5, 85, 50, 15
     CancelButton 115, 85, 50, 15
@@ -145,7 +145,7 @@ check_for_maxis(False)
 
 DO
 	err_msg = ""
-	DIALOG Change_Reported
+	DIALOG Change_Reported_dialog
 		IF ButtonPressed = 0 THEN stopscript
 		IF case_number = "" OR (case_number <> "" AND len(case_number) > 8) OR (case_number <> "" AND IsNumeric(case_number) = False) THEN err_msg = err_msg & vbCr & "* Please enter a valid case number."
 		IF List1 = "Select One" THEN err_msg = err_msg & vbCr & "* Please select the type of change reported."
