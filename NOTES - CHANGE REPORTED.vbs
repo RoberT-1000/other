@@ -110,7 +110,7 @@ BeginDialog HHLD_Comp_Change_Dialog, 0, 0, 291, 175, "Household Comp Change"
   EditBox 215, 50, 70, 15, Effective_Date
   CheckBox 110, 70, 100, 10, "Is the change temporary?", Temporary_Change_Checkbox
   Text 10, 90, 45, 10, "Action Taken"
-  EditBox 60, 85, 225, 15, Action_Taken
+  EditBox 60, 85, 225, 15, Actions_Taken
   Text 5, 110, 60, 10, "Additional Notes"
   EditBox 60, 105, 225, 15, Additional_Notes
   Text 10, 130, 45, 15, "Worker Name"
@@ -165,7 +165,7 @@ DO
 	IF date_of_birth = "" THEN err_msg = err_msg & vbNewLine &  "You must enter a birth date"
 	IF SSN = "" THEN err_msg = err_msg & vbNewLine &  "You must enter baby's Social Security Number"
 	IF fathers_name = "" THEN err_msg = err_msg & vbNewLine &  "You must enter Father's name"
-	IF Action_Taken = "" THEN err_msg = err_msg & vbNewLine & "You must enter the actions taken"
+	IF Actions_Taken = "" THEN err_msg = err_msg & vbNewLine & "You must enter the actions taken"
 	IF worker_signature = "" THEN err_msg = err_msg & vbNewLine & "Please sign your note"
 	IF err_msg <> "" THEN msgbox "*** Notice!!! ***" & vbNewLine & err_msg
 LOOP UNTIL err_msg = ""
@@ -183,7 +183,7 @@ DO
 	IF HH_Member = "" THEN err_msg = err_msg & vbNewLine & "You must enter a HH Member"
 	IF Date_Reported = "" THEN err_msg = err_msg & vbNewLine & "You must enter date reported"
 	IF Effective_Date = "" THEN err_msg = err_msg & vbNewLine & "You must enter effective date"
-	IF Action_Taken = "" THEN err_msg = err_msg & vbNewLine & "You must enter the actions taken"
+	IF Actions_Taken = "" THEN err_msg = err_msg & vbNewLine & "You must enter the actions taken"
 	IF worker_signature = "" THEN err_msg = err_msg & vbNewLine & "Please sign your note"
 	IF err_msg <> "" THEN msgbox "*** Notice!!! ***" & vbNewLine & err_msg
 LOOP UNTIL err_msg = ""
