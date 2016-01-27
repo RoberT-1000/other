@@ -17,7 +17,7 @@ ELSE														'Error message, tells user to try to reach github.com, otherwi
 			vbCr & _
 			"If you can reach GitHub.com, but this script still does not work, ask an alpha user to contact Veronica Cary and provide the following information:" & vbCr &_
 			vbTab & "- The name of the script you are running." & vbCr &_
-			vbTab & "- Whether or not the script is ""erroring out"" for any other users." & vbCr &_
+			vbTab & "- Whether or not the script is ''erroring out'' for any other users." & vbCr &_
 			vbTab & "- The name and email for an employee from your IT department," & vbCr & _
 			vbTab & vbTab & "responsible for network issues." & vbCr &_
 			vbTab & "- The URL indicated below (a screenshot should suffice)." & vbCr &_
