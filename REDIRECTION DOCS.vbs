@@ -1,7 +1,5 @@
 Option Explicit
 
-msgbox "updated 01/27/2016 @ 4:47"
-
 'STATS GATHERING ---------------------------
 name_of_script = "ACTIONS - REDIRECT DOCS.vbs"
 start_time = timer
@@ -89,7 +87,7 @@ EMWriteScreen "D", 3, 29
 	EMWriteScreen Left (case_number, 10), 4, 8
 	EMWriteScreen Right (case_number, 2), 4, 19
 Transmit
-
+msgbox "updated 01/27/2016 @ 4:47"
 '________________________________________________________________________________________________________________________________________________________________________________________ NCP NOTICE
 'goes to DORD
 EMWriteScreen "DORD", 21,18
