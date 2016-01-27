@@ -37,48 +37,48 @@ start_time = timer
 'redirection_year = DatePart("yyyy", month_after)
 'If len(redirection_month) = 1 then redirection_month = "0" & redirection_month
 '
-'Dim case_number, caregiver_case_number, caregiver_name, prorate_yes, prorate_no, child_one, child_two, child_three, child_four, child_five, child_six, cch_amount, cms_amount, ccc_amount, total_amount, original_cp_name
-'BeginDialog redirection_dialog, 0, 0, 236, 285, "Redirection Script"
-'  EditBox 90, 5, 145, 15, case_number
-'  EditBox 90, 20, 145, 15, caregiver_case_number
-'  EditBox 90, 35, 145, 15, original_cp_name
-'  EditBox 90, 50, 145, 15, caregiver_name
-'  CheckBox 115, 75, 25, 10, "Yes", prorate_yes
-'  CheckBox 140, 75, 20, 10, "No", prorate_no
-'  EditBox 10, 105, 220, 15, child_one
-'  EditBox 10, 120, 220, 15, child_two
-'  EditBox 10, 135, 220, 15, child_three
-'  EditBox 10, 150, 220, 15, child_four
-'  EditBox 10, 165, 220, 15, child_five
-'  EditBox 10, 180, 220, 15, child_six
-'  EditBox 5, 210, 70, 15, cch_amount
-'  EditBox 80, 210, 70, 15, cms_amount
-'  EditBox 155, 210, 70, 15, ccc_amount
-'  EditBox 80, 235, 70, 15, total_amount
-'  ButtonGroup ButtonPressed
-'    OkButton 55, 260, 50, 15
-'    CancelButton 125, 260, 50, 15
-'  Text 40, 10, 50, 10, "Case Number:"
-'  Text 5, 25, 80, 10, "Caregiver Case Number:"
-'  Text 20, 55, 65, 10, "Name Of Caregiver:"
-'  Text 5, 75, 105, 10, "Prorate Support Per Each Child?"
-'  Text 5, 95, 200, 10, "Child(ren) that are having support redirected (FULL NAME)"
-'  Text 10, 200, 180, 10, "Amounts To Be Redirected: (must be xxx.xx format)"
-'  Text 30, 225, 20, 10, "CCH"
-'  Text 100, 225, 35, 10, "CMS"
-'  Text 180, 225, 35, 10, "CCC"
-'  Text 95, 250, 40, 10, "TOTAL"
-'  Text 25, 40, 60, 10, "Original CP name:"
-'EndDialog
-'
-'
-''Connects to Bluezone
+Dim case_number, caregiver_case_number, caregiver_name, prorate_yes, prorate_no, child_one, child_two, child_three, child_four, child_five, child_six, cch_amount, cms_amount, ccc_amount, total_amount, original_cp_name
+BeginDialog redirection_dialog, 0, 0, 236, 285, "Redirection Script"
+  EditBox 90, 5, 145, 15, case_number
+  EditBox 90, 20, 145, 15, caregiver_case_number
+  EditBox 90, 35, 145, 15, original_cp_name
+  EditBox 90, 50, 145, 15, caregiver_name
+  CheckBox 115, 75, 25, 10, "Yes", prorate_yes
+  CheckBox 140, 75, 20, 10, "No", prorate_no
+  EditBox 10, 105, 220, 15, child_one
+  EditBox 10, 120, 220, 15, child_two
+  EditBox 10, 135, 220, 15, child_three
+  EditBox 10, 150, 220, 15, child_four
+  EditBox 10, 165, 220, 15, child_five
+  EditBox 10, 180, 220, 15, child_six
+  EditBox 5, 210, 70, 15, cch_amount
+  EditBox 80, 210, 70, 15, cms_amount
+  EditBox 155, 210, 70, 15, ccc_amount
+  EditBox 80, 235, 70, 15, total_amount
+  ButtonGroup ButtonPressed
+    OkButton 55, 260, 50, 15
+    CancelButton 125, 260, 50, 15
+  Text 40, 10, 50, 10, "Case Number:"
+  Text 5, 25, 80, 10, "Caregiver Case Number:"
+  Text 20, 55, 65, 10, "Name Of Caregiver:"
+  Text 5, 75, 105, 10, "Prorate Support Per Each Child?"
+  Text 5, 95, 200, 10, "Child(ren) that are having support redirected (FULL NAME)"
+  Text 10, 200, 180, 10, "Amounts To Be Redirected: (must be xxx.xx format)"
+  Text 30, 225, 20, 10, "CCH"
+  Text 100, 225, 35, 10, "CMS"
+  Text 180, 225, 35, 10, "CCC"
+  Text 95, 250, 40, 10, "TOTAL"
+  Text 25, 40, 60, 10, "Original CP name:"
+EndDialog
+
+
+'Connects to Bluezone
 EMConnect ""
-'
-''Starts dialog
-'					Dialog redirection_dialog
-'     					IF ButtonPressed = 0 THEN StopScript
-'
+
+'Starts dialog
+					Dialog redirection_dialog
+     					IF ButtonPressed = 0 THEN StopScript
+
 'goes to correct case
 EMWriteScreen "CAST", 21,18
 Transmit
