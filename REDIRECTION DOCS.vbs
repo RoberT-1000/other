@@ -1,6 +1,6 @@
 'STATS GATHERING ---------------------------
-name_of_script = "ACTIONS - REDIRECT DOCS.vbs"
-start_time = timer
+'name_of_script = "ACTIONS - REDIRECT DOCS.vbs"
+'start_time = timer
 
 
 'LOADING SCRIPT
