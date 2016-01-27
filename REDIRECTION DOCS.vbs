@@ -31,12 +31,12 @@ ELSE														'Error message, tells user to try to reach github.com, otherwi
 			StopScript
 END IF
 
-'thirty_days_away = DateAdd("d", 30, date) 
-'month_after = DateAdd("m", 1, thirty_days_away)
-'redirection_month = DatePart("m", month_after)
-'redirection_year = DatePart("yyyy", month_after)
-'If len(redirection_month) = 1 then redirection_month = "0" & redirection_month
-'
+thirty_days_away = DateAdd("d", 30, date) 
+month_after = DateAdd("m", 1, thirty_days_away)
+redirection_month = DatePart("m", month_after)
+redirection_year = DatePart("yyyy", month_after)
+If len(redirection_month) = 1 then redirection_month = "0" & redirection_month
+
 'Dim case_number, caregiver_case_number, caregiver_name, prorate_yes, prorate_no, child_one, child_two, child_three, child_four, child_five, child_six, cch_amount, cms_amount, ccc_amount, total_amount, original_cp_name
 BeginDialog redirection_dialog, 0, 0, 236, 285, "Redirection Script"
   EditBox 90, 5, 145, 15, case_number
