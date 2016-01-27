@@ -80,14 +80,14 @@ start_time = timer
 '					Dialog redirection_dialog
 '     					IF ButtonPressed = 0 THEN StopScript
 '
-''goes to correct case
-'EMWriteScreen "CAST", 21,18
-'Transmit
-'EMWriteScreen "D", 3, 29
-''Puts case number in from Dialog box
-'	EMWriteScreen Left (case_number, 10), 4, 8
-'	EMWriteScreen Right (case_number, 2), 4, 19
-'Transmit
+'goes to correct case
+EMWriteScreen "CAST", 21,18
+Transmit
+EMWriteScreen "D", 3, 29
+'Puts case number in from Dialog box
+	EMWriteScreen Left (case_number, 10), 4, 8
+	EMWriteScreen Right (case_number, 2), 4, 19
+Transmit
 
 '________________________________________________________________________________________________________________________________________________________________________________________ NCP NOTICE
 'goes to DORD
