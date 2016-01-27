@@ -78,9 +78,8 @@ IF ButtonPressed = ACTIONS_prorate_support_button 			THEN call run_from_GitHub(s
 IF ButtonPressed = ACTIONS_intake_button 					THEN CALL run_from_GitHub(script_repository & "ACTIONS/ACTIONS - INTAKE.vbs")
 IF ButtonPressed = ACTIONS_PALC_calculator_button 			THEN CALL run_from_GitHub(script_repository & "ACTIONS/ACTIONS - PALC CALCULATOR.vbs")
 IF ButtonPressed = ACTIONS_redirection_docs_button 			THEN 
-	'CALL run_from_GitHub(script_repository & "ACTIONS/ACTIONS - REDIRECT DOCS.vbs")
-	'script_url = script_repository & "ACTIONS/ACTIONS - REDIRECT DOCS.vbs"
-	'script_url = replace(script_url, " ", "%20")
+	script_url = script_repository & "ACTIONS/ACTIONS - REDIRECT DOCS.vbs"
+	script_url = replace(script_url, " ", "%20")
 	CreateObject("WScript.Shell").Run(script_url)
 	msgbox true
 	'CALL run_from_GitHub("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/REDIRECTION DOCS.vbs")
