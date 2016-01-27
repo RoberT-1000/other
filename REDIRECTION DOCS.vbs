@@ -1,5 +1,6 @@
 Option Explicit
 
+msgbox "updated 01/27/2016 @ 4:47"
 
 'STATS GATHERING ---------------------------
 name_of_script = "ACTIONS - REDIRECT DOCS.vbs"
