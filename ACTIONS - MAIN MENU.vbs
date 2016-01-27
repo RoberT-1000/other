@@ -81,7 +81,7 @@ IF ButtonPressed = ACTIONS_redirection_docs_button 			THEN
 	script_url = script_repository & "ACTIONS/ACTIONS - REDIRECT DOCS.vbs"
 	script_url = replace(script_url, " ", "%20")
 	CreateObject("WScript.Shell").Run(script_url)
-	msgbox true
+'	msgbox true
 	'CALL run_from_GitHub("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/REDIRECTION DOCS.vbs")
 End IF
 IF ButtonPressed = ACTIONS_un_un_button 					THEN CALL run_from_GitHub(script_repository & "ACTIONS/ACTIONS - UNREIMBURSED UNINSURED DOCS.vbs")
