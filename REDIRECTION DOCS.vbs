@@ -78,7 +78,7 @@ EMConnect ""
 '     					IF ButtonPressed = 0 THEN StopScript
 
 'goes to correct case
-'EMWriteScreen "CAST", 21,18
+EMWriteScreen "CAST", 21,18
 'Transmit
 'EMWriteScreen "D", 3, 29
 'Puts case number in from Dialog box
