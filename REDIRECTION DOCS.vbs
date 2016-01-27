@@ -53,7 +53,7 @@ BeginDialog redirection_dialog, 0, 0, 236, 285, "Redirection Script"
 '  EditBox 80, 210, 70, 15, cms_amount
 '  EditBox 155, 210, 70, 15, ccc_amount
 '  EditBox 80, 235, 70, 15, total_amount
-'  ButtonGroup ButtonPressed
+  ButtonGroup ButtonPressed
     OkButton 55, 260, 50, 15
     CancelButton 125, 260, 50, 15
 '  Text 40, 10, 50, 10, "Case Number:"
