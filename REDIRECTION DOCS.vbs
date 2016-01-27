@@ -73,7 +73,7 @@ start_time = timer
 '
 '
 ''Connects to Bluezone
-'EMConnect ""
+EMConnect ""
 '
 ''Starts dialog
 '					Dialog redirection_dialog
