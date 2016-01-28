@@ -80,6 +80,6 @@ IF ButtonPressed = ACTIONS_PALC_calculator_button 			THEN CALL run_from_GitHub(s
 IF ButtonPressed = ACTIONS_redirection_docs_button 			THEN 
 	script_url = script_repository & "ACTIONS/ACTIONS - REDIRECT DOCS.vbs"
 	script_url = replace(script_url, " ", "%20")
-	CreateObject("WScript.Shell").Run(script_url)
+	CreateObject("WScript.Shell").Run("https://github.com/MN-CS-Script-Team/PRISM-Scripts/blob/master/Script%20Files/ACTIONS/ACTIONS%20-%20REDIRECT%20DOCS.vbs")
 End IF
 IF ButtonPressed = ACTIONS_un_un_button 					THEN CALL run_from_GitHub(script_repository & "ACTIONS/ACTIONS - UNREIMBURSED UNINSURED DOCS.vbs")
