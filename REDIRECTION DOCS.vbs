@@ -1,4 +1,4 @@
-Option Explicit
+'Option Explicit
 
 'STATS GATHERING ---------------------------
 name_of_script = "ACTIONS - these DOCS.vbs"
@@ -80,18 +80,19 @@ EMConnect ""
      					IF ButtonPressed = 0 THEN StopScript
 
 'goes to correct case
-EMWriteScreen "CAST", 21,18
-Transmit
-EMWriteScreen "D", 3, 29
+CALL write_value_and_transmit("CAST", 21, 18)
+
 'Puts case number in from Dialog box
-	EMWriteScreen Left (case_number, 10), 4, 8
-	EMWriteScreen Right (case_number, 2), 4, 19
-Transmit
+EMWriteScreen Left (case_number, 10), 4, 8
+EMWriteScreen Right (case_number, 2), 4, 19
+
+CALL write_value_and_transmit("D", 3, 29)
+
 msgbox "updated 01/27/2016 @ 5:00"
 '________________________________________________________________________________________________________________________________________________________________________________________ NCP NOTICE
 'goes to DORD
-EMWriteScreen "DORD", 21,18
-Transmit
+CALL navigate_to_PRISM_screen("DORD")
+
 'Adds dord doc
 EMWriteScreen "A", 3, 29
 'blanks out any DOC ID number that may be entered
@@ -101,21 +102,12 @@ EMWriteScreen "F0500", 6, 36
 Transmit
 
 'entering user labels
-EMSendKey (PF14)
-EMWriteScreen "U", 20, 14
-Transmit
-EMWriteScreen "S", 7, 5
-EMWriteScreen "S", 8, 5
-EMWriteScreen "S", 9, 5
-EMWriteScreen "S", 10, 5
-EMWriteScreen "S", 11, 5
-EMWriteScreen "S", 12, 5
-EMWriteScreen "S", 13, 5
-EMWriteScreen "S", 14, 5
-EMWriteScreen "S", 15, 5
-EMWriteScreen "S", 16, 5
-EMWriteScreen "S", 17, 5
-EMWriteScreen "S", 18, 5
+PF14
+CALL write_value_and_transmit("U", 20, 14)
+
+FOR i = 7 to 18
+	EMWriteScreen "S", i, 5
+NEXT
 Transmit
 
 EMWriteScreen redirection_month, 16, 15
@@ -124,65 +116,40 @@ EMWriteScreen redirection_year, 16, 21
 Transmit
 EMWriteScreen caregiver_name, 16, 15
 Transmit
-If prorate_yes = checked then
-	EMWriteScreen "Y", 16, 15
-	Transmit
-End If
-If prorate_no = checked then
-	EMWriteScreen "N", 16, 15
-	Transmit
-End If
-EMWriteScreen child_one, 16, 15
-Transmit
-EMWriteScreen child_two, 16, 15
-Transmit
-EMWriteScreen child_three, 16, 15
-Transmit
-EMWriteScreen child_four, 16, 15
-Transmit
-EMWriteScreen child_five, 16, 15
-Transmit
-EMWriteScreen child_six, 16, 15
-Transmit
-EMWriteScreen cch_amount, 16, 15
-Transmit
-EMWriteScreen cms_amount, 16, 15
-Transmit
-EMWriteScreen ccc_amount, 16, 15
-Transmit
-EMSendKey (PF8)
-EMWriteScreen "S", 7, 5
-Transmit
-EMWriteScreen total_amount, 16, 15
-Transmit
-EMSendKey (PF3)
-EMWriteScreen "M", 3, 29
-Transmit								'At this point, the notice to the NCP is ready to be printed
+If prorate_yes = checked then CALL write_value_and_transmit("Y", 16, 15)
+If prorate_no = checked then CALL write_value_and_transmit("N", 16, 15)
+
+CALL write_value_and_transmit(child_one, 16, 15)
+CALL write_value_and_transmit(child_two, 16, 15)
+CALL write_value_and_transmit(child_three, 16, 15)
+CALL write_value_and_transmit(child_four, 16, 15)
+CALL write_value_and_transmit(child_five, 16, 15)
+CALL write_value_and_transmit(child_six, 16, 15)
+
+CALL write_value_and_transmit(cch_amount, 16, 15)
+CALL write_value_and_transmit(cms_amount, 16, 15)
+CALL write_value_and_transmit(ccc_amount, 16, 15)
+
+PF8
+CALL write_value_and_transmit("S", 7, 5)
+CALL write_value_and_transmit(total_amount, 16, 15)
+
+PF3
+CALL write_value_and_transmit("M", 3, 29)		'At this point, the notice to the NCP is ready to be printed
 '________________________________________________________________________________________________________________________________________________________________________________________ CP NOTICE
 'clears DORD screen and adds and completes notice to CP
-EMWriteScreen "C", 3, 29
-Transmit
+CALL write_value_and_transmit("C", 3, 29)
 
-EMWriteScreen "A", 3, 29
 EMWriteScreen "F0501", 6, 36
-Transmit
+CALL write_value_and_transmit("A", 3, 29)
 
 'entering user labels
-EMSendKey (PF14)
-EMWriteScreen "U", 20, 14
-Transmit
-EMWriteScreen "S", 7, 5
-EMWriteScreen "S", 8, 5
-EMWriteScreen "S", 9, 5
-EMWriteScreen "S", 10, 5
-EMWriteScreen "S", 11, 5
-EMWriteScreen "S", 12, 5
-EMWriteScreen "S", 13, 5
-EMWriteScreen "S", 14, 5
-EMWriteScreen "S", 15, 5
-EMWriteScreen "S", 16, 5
-EMWriteScreen "S", 17, 5
-EMWriteScreen "S", 18, 5
+PF14
+CALL write_value_and_transmit("U", 20, 14)
+
+FOR i = 7 to 18
+	EMWriteScreen "S", i, 5
+NEXT
 Transmit
 
 EMWriteScreen redirection_month, 16, 15
@@ -191,45 +158,31 @@ EMWriteScreen redirection_year, 16, 21
 Transmit
 EMWriteScreen caregiver_name, 16, 15
 Transmit
-If prorate_yes = checked then
-	EMWriteScreen "Y", 16, 15
-	Transmit
-End If
-If prorate_no = checked then
-	EMWriteScreen "N", 16, 15
-	Transmit
-End If
-EMWriteScreen child_one, 16, 15
-Transmit
-EMWriteScreen child_two, 16, 15
-Transmit
-EMWriteScreen child_three, 16, 15
-Transmit
-EMWriteScreen child_four, 16, 15
-Transmit
-EMWriteScreen child_five, 16, 15
-Transmit
-EMWriteScreen child_six, 16, 15
-Transmit
-EMWriteScreen cch_amount, 16, 15
-Transmit
-EMWriteScreen cms_amount, 16, 15
-Transmit
-EMWriteScreen ccc_amount, 16, 15
-Transmit
-EMSendKey (PF8)
-EMWriteScreen "S", 7, 5
-Transmit
-EMWriteScreen total_amount, 16, 15
-Transmit
-EMSendKey (PF3)
-EMWriteScreen "M", 3, 29
-Transmit								'At this point, the notice to the CP is ready to be printed
+If prorate_yes = checked then CALL write_value_and_transmit("Y", 16, 15)
+If prorate_no = checked then CALL write_value_and_transmit("N", 16, 15)
+
+CALL write_value_and_transmit(child_one, 16, 15)
+CALL write_value_and_transmit(child_two, 16, 15)
+CALL write_value_and_transmit(child_three, 16, 15)
+CALL write_value_and_transmit(child_four, 16, 15)
+CALL write_value_and_transmit(child_five, 16, 15)
+CALL write_value_and_transmit(child_six, 16, 15)
+
+CALL write_value_and_transmit(cch_amount, 16, 15)
+CALL write_value_and_transmit(cms_amount, 16, 15)
+CALL write_value_and_transmit(ccc_amount, 16, 15)
+
+PF8
+CALL write_value_and_transmit("S", 7, 5)
+CALL write_value_and_transmit(total_amount, 16, 15)
+
+PF3
+CALL write_value_and_transmit("M", 3, 29)	'At this point, the notice to the CP is ready to be printed
 
 'Enters worklist explaining to start redirection effective for the following month. 
-EMWriteScreen "CAWT", 21,18
-Transmit
-EMSendKey (PF5)
+CALL navigate_to_PRISM_screen("CAWT")
+
+PF5
 EMWriteScreen "A", 3, 30
 EMWriteScreen "FREE", 4, 37
 EMWriteScreen "The redirection should be effective the 1st of next month", 10, 4 
@@ -239,16 +192,17 @@ Transmit
 '________________________________________________________________________________________________________________________________________________________________________________________ CAREGIVER NOTICE
 
 'goes to caregiver case
-EMWriteScreen "CAST", 21,18
-Transmit
-EMWriteScreen "D", 3, 29
+CALL navigate_to_PRISM_screen("CAST")
+
 'Puts caregiver case number in from Dialog box
-	EMWriteScreen Left (caregiver_case_number, 10), 4, 8
-	EMWriteScreen Right (caregiver_case_number, 2), 4, 19
-Transmit
+EMWriteScreen Left (caregiver_case_number, 10), 4, 8
+EMWriteScreen Right (caregiver_case_number, 2), 4, 19
+
+CALL write_value_and_transmit("D", 3, 29)
+
 'goes to DORD
-EMWriteScreen "DORD", 21,18
-Transmit
+CALL navigate_to_PRISM_screen("DORD")
+
 'Adds dord doc
 EMWriteScreen "A", 3, 29
 'blanks out any DOC ID number that may be entered
@@ -258,56 +212,39 @@ EMWriteScreen "F0502", 6, 36
 Transmit
 
 'entering user labels
-EMSendKey (PF14)
-EMWriteScreen "U", 20, 14
+PF14
+CALL write_value_and_transmit("U", 20, 14)
+
+FOR i = 7 to 18
+	EMWriteScreen "S", i, 5
+NEXT
 Transmit
-EMWriteScreen "S", 7, 5
-EMWriteScreen "S", 8, 5
-EMWriteScreen "S", 9, 5
-EMWriteScreen "S", 10, 5
-EMWriteScreen "S", 11, 5
-EMWriteScreen "S", 12, 5
-EMWriteScreen "S", 13, 5
-EMWriteScreen "S", 14, 5
-EMWriteScreen "S", 15, 5
-EMWriteScreen "S", 16, 5
-EMWriteScreen "S", 17, 5
-EMWriteScreen "S", 18, 5
-Transmit
+
 EMWriteScreen redirection_month, 16, 15
 EMWriteScreen "/01/", 16, 17
 EMWriteScreen redirection_year, 16, 21
 Transmit
-EMWriteScreen original_cp_name, 16, 15                                  
-Transmit
-EMWriteScreen child_one, 16, 15
-Transmit
-EMWriteScreen child_two, 16, 15
-Transmit
-EMWriteScreen child_three, 16, 15
-Transmit
-EMWriteScreen child_four, 16, 15
-Transmit
-EMWriteScreen child_five, 16, 15
-Transmit
-EMWriteScreen child_six, 16, 15
-Transmit
-EMWriteScreen cch_amount, 16, 15
-Transmit
-EMWriteScreen cms_amount, 16, 15
-Transmit
-EMWriteScreen ccc_amount, 16, 15
-Transmit
-EMWriteScreen total_amount, 16, 15
-Transmit
-EMSendKey (PF3)
-EMWriteScreen "M", 3, 29
-Transmit								'At this point, the notice to the caregiver is ready to be printed
+
+CALL write_value_and_transmit(original_cp_name, 16, 15)
+
+CALL write_value_and_transmit(child_one, 16, 15)
+CALL write_value_and_transmit(child_two, 16, 15)
+CALL write_value_and_transmit(child_three, 16, 15)
+CALL write_value_and_transmit(child_four, 16, 15)
+CALL write_value_and_transmit(child_five, 16, 15)
+CALL write_value_and_transmit(child_six, 16, 15)
+
+CALL write_value_and_transmit(cch_amount, 16, 15)
+CALL write_value_and_transmit(cms_amount, 16, 15)
+CALL write_value_and_transmit(ccc_amount, 16, 15)
+CALL write_value_and_transmit(total_amount, 16, 15)
+
+PF3
+CALL write_value_and_transmit("M", 3, 29)		'At this point, the notice to the caregiver is ready to be printed
 
 'Enters worklist explaining to start redirection effective for the following month. 
-EMWriteScreen "CAWT", 21,18
-Transmit
-EMSendKey (PF5)
+CALL navigate_to_PRISM_screen("CAWT")
+PF5
 EMWriteScreen "A", 3, 30
 EMWriteScreen "FREE", 4, 37
 EMWriteScreen "The redirection should be effective the 1st of next month", 10, 4 
