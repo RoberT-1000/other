@@ -77,10 +77,10 @@ IF ButtonPressed = ACTIONS_find_name_on_cali_button 		THEN CALL run_from_GitHub(
 IF ButtonPressed = ACTIONS_prorate_support_button 			THEN call run_from_GitHub(script_repository & "ACTIONS/ACTIONS - PRORATE SUPPORT.vbs")
 IF ButtonPressed = ACTIONS_intake_button 					THEN CALL run_from_GitHub(script_repository & "ACTIONS/ACTIONS - INTAKE.vbs")
 IF ButtonPressed = ACTIONS_PALC_calculator_button 			THEN CALL run_from_GitHub(script_repository & "ACTIONS/ACTIONS - PALC CALCULATOR.vbs")
-IF ButtonPressed = ACTIONS_redirection_docs_button 			THEN 
-	script_url = script_repository & "ACTIONS/ACTIONS - REDIRECT DOCS.vbs"
-	script_url = replace(script_url, " ", "%20")
-	'CreateObject("WScript.Shell").Run("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/REDIRECTION%20DOCS.vbs")
-	CALL run_from_GitHub("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/REDIRECTION DOCS.vbs")
-End IF
+IF ButtonPressed = ACTIONS_redirection_docs_button 			THEN CALL run_from_GitHub(script_repository & "ACTIONS/ACTIONS - DOCS FOR REDIRECT.vbs")
+'	script_url = script_repository & "ACTIONS/ACTIONS - REDIRECT DOCS.vbs"
+'	script_url = replace(script_url, " ", "%20")
+'	'CreateObject("WScript.Shell").Run("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/REDIRECTION%20DOCS.vbs")
+'	CALL run_from_GitHub("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/REDIRECTION DOCS.vbs")
+'End IF
 IF ButtonPressed = ACTIONS_un_un_button 					THEN CALL run_from_GitHub(script_repository & "ACTIONS/ACTIONS - UNREIMBURSED UNINSURED DOCS.vbs")
