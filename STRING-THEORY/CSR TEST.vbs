@@ -196,7 +196,7 @@ EndDialog
 				
 					Dialog CSR_dialog01
 					cancel_confirmation
-					IF ButtonPressed = JOBS_button THEN paystubs_received_script
+					IF ButtonPressed = JOBS_button THEN CALL paystubs_received_script()
 					If ButtonPressed = SIR_mail_button then run "C:\Program Files\Internet Explorer\iexplore.exe https://www.dhssir.cty.dhs.state.mn.us/Pages/Default.aspx"
 					'If next_button = pressed THEN msgbox next_button
 				Loop until ButtonPressed <> no_cancel_button
