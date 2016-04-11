@@ -1,6 +1,6 @@
 'GATHERING STATS----------------------------------------------------------------------------------------------------
-name_of_script = "NOTES - CSR.vbs"
-start_time = timer
+'name_of_script = "NOTES - CSR.vbs"
+'start_time = timer
 
 msgbox "here5"
 
