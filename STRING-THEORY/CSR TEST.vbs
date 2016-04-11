@@ -227,7 +227,7 @@ EndDialog
 					Dialog CSR_dialog01
 					cancel_confirmation
 					IF ButtonPressed = JOBS_button THEN 
-						parent_script = "CSR"
+						msgbox parent_script
 						CALL run_from_GitHub("https://raw.githubusercontent.com/MN-Script-Team/DHS-MAXIS-Scripts/master/Script%20Files/ACTIONS/ACTIONS%20-%20PAYSTUBS%20RECEIVED.vbs")
 					END IF	
 					If ButtonPressed = SIR_mail_button then run "C:\Program Files\Internet Explorer\iexplore.exe https://www.dhssir.cty.dhs.state.mn.us/Pages/Default.aspx"
