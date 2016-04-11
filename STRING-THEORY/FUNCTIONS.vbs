@@ -1,4 +1,3 @@
-msgbox "h1"
 
 'LOADING FUNCTIONS LIBRARY FROM GITHUB REPOSITORY===========================================================================
 	FuncLib_URL = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/master/MASTER%20FUNCTIONS%20LIBRARY.vbs"
@@ -14,7 +13,6 @@ msgbox "h1"
 	END IF
 'END FUNCTIONS LIBRARY BLOCK================================================================================================
 
-msgbox "made it in!"
 
 Function prospective_averager(pay_date, gross_amt, hours, paystubs_received, total_prospective_pay, total_prospective_hours) 'Creates variables for total_prospective_pay and total_prospective_hours
   If isdate(pay_date) = True then
