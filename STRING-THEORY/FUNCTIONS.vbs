@@ -2,12 +2,12 @@ msgbox "h1"
 
 'LOADING FUNCTIONS LIBRARY FROM GITHUB REPOSITORY===========================================================================
 	FuncLib_URL = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/master/MASTER%20FUNCTIONS%20LIBRARY.vbs"
-	SET req = CreateObject("Msxml2.XMLHttp.6.0")				'Creates an object to get a FuncLib_URL
-	req.open "GET", FuncLib_URL, FALSE							'Attempts to open the FuncLib_URL
-	req.send													'Sends request
-	IF req.Status = 200 THEN									'200 means great success
+	SET FuncLib_req = CreateObject("Msxml2.XMLHttp.6.0")				'Creates an object to get a FuncLib_URL
+	FuncLib_req.open "GET", FuncLib_URL, FALSE							'Attempts to open the FuncLib_URL
+	FuncLib_req.send													'Sends request
+	IF FuncLib_req.Status = 200 THEN									'200 means great success
 		Set fso = CreateObject("Scripting.FileSystemObject")	'Creates an FSO
-		Execute req.responseText								'Executes the script code
+		Execute FuncLib_req.responseText								'Executes the script code
 	ELSE														'Error message, tells user to try to reach github.com, otherwise instructs to contact Veronica with details (and stops script).
 		MsgBox 	"Something has gone wrong. The code stored on GitHub was not able to be reached."
 		stopscipt
