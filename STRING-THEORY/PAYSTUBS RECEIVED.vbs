@@ -637,4 +637,9 @@ IF number_of_paystubs > 5 THEN
 ELSE
 	MsgBox "Success!! Your JOBS panel has been updated with the paystubs you've entered in. Send your case through background, review the results, and take action as appropriate. Don't forget to case note!"
 END IF
+
+IF parent_script <> "" THEN 
+	IF parent_script = "CSR" THEN CALL run_from_GitHub("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/STRING-THEORY/CSR%20TEST.vbs")
+END IF
+
 script_end_procedure("")
