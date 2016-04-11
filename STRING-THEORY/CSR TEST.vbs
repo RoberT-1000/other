@@ -289,6 +289,10 @@ DO
 				DO
 					Dialog CSR_dialog02
 					cancel_confirmation
+					IF ButtonPressed = JOBS_button THEN 
+						parent_script = "CSR"
+						CALL run_from_GitHub("https://raw.githubusercontent.com/MN-Script-Team/DHS-MAXIS-Scripts/master/Script%20Files/ACTIONS/ACTIONS%20-%20PAYSTUBS%20RECEIVED.vbs")
+					END IF						
 					IF ButtonPressed = SIR_mail_button THEN run "C:\Program Files\Internet Explorer\iexplore.exe https://www.dhssir.cty.dhs.state.mn.us/Pages/Default.aspx"
 				LOOP UNTIL ButtonPressed <> no_cancel_button
 				MAXIS_dialog_navigation
