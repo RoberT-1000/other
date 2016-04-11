@@ -2,6 +2,8 @@
 name_of_script = "ACTIONS - PAYSTUBS RECEIVED.vbs"
 start_time = timer
 
+IF parent_script = "" THEN 
+'Loading FuncLib if we have not yet already
 'LOADING FUNCTIONS LIBRARY FROM GITHUB REPOSITORY===========================================================================
 IF IsEmpty(FuncLib_URL) = TRUE THEN	'Shouldn't load FuncLib if it already loaded once
 	IF run_locally = FALSE or run_locally = "" THEN		'If the scripts are set to run locally, it skips this and uses an FSO below.
@@ -43,6 +45,9 @@ IF IsEmpty(FuncLib_URL) = TRUE THEN	'Shouldn't load FuncLib if it already loaded
 	END IF
 END IF
 'END FUNCTIONS LIBRARY BLOCK================================================================================================
+ELSE
+	msgbox parent_script
+END IF
 
 'Required for statistical purposes==========================================================================================
 STATS_counter = 1                     	'sets the stats counter at one
@@ -641,8 +646,6 @@ ELSE
 	MsgBox "Success!! Your JOBS panel has been updated with the paystubs you've entered in. Send your case through background, review the results, and take action as appropriate. Don't forget to case note!"
 END IF
 
-IF parent_script <> "" THEN 
-	IF parent_script = "CSR" THEN CALL run_from_GitHub("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/STRING-THEORY/CSR%20TEST.vbs")
-END IF
+IF parent_script = "CSR" THEN CALL run_from_GitHub("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/STRING-THEORY/CSR%20TEST.vbs")
 
 script_end_procedure("")
