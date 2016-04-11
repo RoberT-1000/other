@@ -2,13 +2,13 @@
 name_of_script = "NOTES - CSR.vbs"
 start_time = timer
 
-url = "https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/STRING-THEORY/FUNCTIONS.vbs"
-SET req = CreateObject("Msxml2.XMLHttp.6.0")				'Creates an object to get a FuncLib_URL
-req.open "GET", FuncLib_URL, FALSE							'Attempts to open the FuncLib_URL
-req.send													'Sends request
-IF req.Status = 200 THEN									'200 means great success
+additional_url = "https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/STRING-THEORY/FUNCTIONS.vbs"
+SET additional_req = CreateObject("Msxml2.XMLHttp.6.0")				'Creates an object to get a FuncLib_URL
+additional_req.open "GET", additional_url, FALSE							'Attempts to open the FuncLib_URL
+additional_req.send													'Sends request
+IF additional_req.Status = 200 THEN									'200 means great success
 	Set fso = CreateObject("Scripting.FileSystemObject")	'Creates an FSO
-	Execute req.responseText								'Executes the script code
+	Execute additional_req.responseText								'Executes the script code
 ELSE
 	MsgBox "The script cannot find the FuncLib"
 	stopscript
