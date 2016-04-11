@@ -2,6 +2,8 @@
 name_of_script = "NOTES - CSR.vbs"
 start_time = timer
 
+msgbox "here5"
+
 additional_url = "https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/STRING-THEORY/FUNCTIONS.vbs"
 SET additional_req = CreateObject("Msxml2.XMLHttp.6.0")				'Creates an object to get a FuncLib_URL
 additional_req.open "GET", additional_url, FALSE							'Attempts to open the FuncLib_URL
@@ -13,6 +15,8 @@ ELSE
 	MsgBox "The script cannot find the FuncLib"
 	stopscript
 END IF
+
+msgbox "here 19"
 
 'Required for statistical purposes==========================================================================================
 STATS_counter = 1               'sets the stats counter at one
