@@ -161,14 +161,20 @@ FUNCTION create_paystubs_received_dialog(worker_signature, number_of_paystubs, p
 	LOOP UNTIL are_we_passworded_out = false
 END FUNCTION
 
-BeginDialog number_of_paystubs_dlg, 0, 0, 211, 65, "Number of Pay Dates"
-  EditBox 165, 10, 40, 15, number_of_paystubs
-  ButtonGroup ButtonPressed
-    OkButton 105, 45, 50, 15
-    CancelButton 155, 45, 50, 15
-  Text 10, 15, 145, 10, "Enter the number of pay dates being used..."
-EndDialog
 
+'THE SCRIPT----------------------------------------------------------------------------------------------------
+'Connecting to MAXIS, and grabbing the case number and footer month'
+EMConnect ""
+Call MAXIS_case_number_finder(case_number)
+Call MAXIS_footer_finder(MAXIS_footer_month, MAXIS_footer_year)
+
+'Default member is member 01
+HH_member = "01"
+
+DO
+	'Shows the case number dialog
+	DO
+	
 BeginDialog paystubs_received_case_number_dialog, 0, 0, 376, 170, "Case number"
   EditBox 100, 5, 60, 15, case_number
   EditBox 70, 25, 25, 15, MAXIS_footer_month
@@ -193,18 +199,6 @@ BeginDialog paystubs_received_case_number_dialog, 0, 0, 376, 170, "Case number"
   Text 30, 115, 120, 10, "future months and send through BG."
 EndDialog
 
-'THE SCRIPT----------------------------------------------------------------------------------------------------
-'Connecting to MAXIS, and grabbing the case number and footer month'
-EMConnect ""
-Call MAXIS_case_number_finder(case_number)
-Call MAXIS_footer_finder(MAXIS_footer_month, MAXIS_footer_year)
-
-'Default member is member 01
-HH_member = "01"
-
-DO
-	'Shows the case number dialog
-	DO
 		Dialog paystubs_received_case_number_dialog
 			If buttonpressed = 0 then stopscript
 		call check_for_password(are_we_passworded_out)
@@ -258,6 +252,15 @@ DO
 LOOP UNTIL employer_found = True
 
 DO
+'Building the dialog
+BeginDialog number_of_paystubs_dlg, 0, 0, 211, 65, "Number of Pay Dates"
+  EditBox 165, 10, 40, 15, number_of_paystubs
+  ButtonGroup ButtonPressed
+    OkButton 105, 45, 50, 15
+    CancelButton 155, 45, 50, 15
+  Text 10, 15, 145, 10, "Enter the number of pay dates being used..."
+EndDialog
+
 	DIALOG number_of_paystubs_dlg
 		IF ButtonPressed = 0 THEN stopscript
 		IF IsNumeric(number_of_paystubs) = False THEN MsgBox "Please enter the number of pay dates as a number."
