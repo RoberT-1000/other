@@ -16,15 +16,6 @@ msgbox "h1"
 
 msgbox "made it in!"
 
-FUNCTION paystubs_received_script
-
-'Required for statistical purposes==========================================================================================
-STATS_counter = 1                     	'sets the stats counter at one
-STATS_manualtime = 458                	'manual run time in seconds
-STATS_denomination = "C"       		'C is for each CASE
-'END OF stats block=========================================================================================================
-
-'CUSTOM FUNCTIONS
 Function prospective_averager(pay_date, gross_amt, hours, paystubs_received, total_prospective_pay, total_prospective_hours) 'Creates variables for total_prospective_pay and total_prospective_hours
   If isdate(pay_date) = True then
     total_prospective_pay = total_prospective_pay + abs(gross_amt)
@@ -74,7 +65,6 @@ Function retro_paystubs_info_adder(pay_date, gross_amt, hours, retro_hours)
   End if
 End function
 
-'DIALOGS----------------------------------------------------------------------------------------------------
 '>>>>> This function creates the dialog that the user inputs all the pay stub information.
 FUNCTION create_paystubs_received_dialog(worker_signature, number_of_paystubs, paystubs_array, explanation_of_income, employer_name, document_datestamp, pay_frequency, JOBS_verif_code)
 	'Declaring the multi-dimensional array for handling pay information
@@ -140,6 +130,15 @@ FUNCTION create_paystubs_received_dialog(worker_signature, number_of_paystubs, p
 		call check_for_password(are_we_passworded_out)  'Adding functionality for MAXIS v.6 Passworded Out issue'
 	LOOP UNTIL are_we_passworded_out = false
 END FUNCTION
+
+
+FUNCTION paystubs_received_script
+
+'Required for statistical purposes==========================================================================================
+STATS_counter = 1                     	'sets the stats counter at one
+STATS_manualtime = 458                	'manual run time in seconds
+STATS_denomination = "C"       		'C is for each CASE
+'END OF stats block=========================================================================================================
 
 
 'THE SCRIPT----------------------------------------------------------------------------------------------------
@@ -630,5 +629,4 @@ END IF
 
 
 END FUNCTION
-
 
