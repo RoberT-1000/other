@@ -140,7 +140,13 @@ FUNCTION create_paystubs_received_dialog(worker_signature, number_of_paystubs, p
 		DO
 			err_msg = ""
 			DIALOG paystubs_received_dialog
-				IF ButtonPressed = 0 THEN stopscript
+				IF ButtonPressed = 0 THEN 
+					IF parent_script = "" THEN 
+						stopscript
+					ELSE
+						IF parent_script = "CSR" THEN CALL run_from_GitHub("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/STRING-THEORY/CSR%20TEST.vbs")
+					END IF 
+				END IF
 				If pay_frequency = "(select one)" then err_msg = err_msg & vbCr & "* You must select a pay frequency."
 				If JOBS_verif_code = "(select one)" then err_msg = err_msg & vbCr & "You must select a JOBS verif code."
 				If explanation_of_income = "" then err_msg = err_msg & vbCr & "* You must explain how you calculated this income (ie: ''all paystubs from last 30 days'')"
@@ -205,7 +211,13 @@ BeginDialog paystubs_received_case_number_dialog, 0, 0, 376, 170, "Case number"
 EndDialog
 
 		Dialog paystubs_received_case_number_dialog
-			If buttonpressed = 0 then stopscript
+			IF ButtonPressed = 0 THEN 
+				IF parent_script = "" THEN 
+					stopscript
+				ELSE
+					IF parent_script = "CSR" THEN CALL run_from_GitHub("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/STRING-THEORY/CSR%20TEST.vbs")
+				END IF 
+			END IF
 		call check_for_password(are_we_passworded_out)
 	LOOP UNTIL are_we_passworded_out = false
 
