@@ -59,6 +59,24 @@ footer_year = datepart("yyyy", next_month)
 footer_year = "" & footer_year - 2000
 
 'DIALOGS-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+'VARIABLES WHICH NEED DECLARING------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+HH_memb_row = 5
+Dim row
+Dim col
+
+'THE SCRIPT------------------------------------------------------------------------------------------------------------------------------------------------
+'Connecting to MAXIS
+EMConnect ""
+'Searching for the case_number variable
+call MAXIS_case_number_finder(case_number)
+'Searching for the footer month and footer year
+call MAXIS_footer_finder(MAXIS_footer_month, MAXIS_footer_year)
+
+'Showing the case number dialog
+DO
+	err_msg = ""
+	
 BeginDialog case_number_dialog, 0, 0, 166, 265, "Case number dialog"
   EditBox 75, 5, 70, 15, case_number
   EditBox 80, 25, 30, 15, footer_month
@@ -79,123 +97,6 @@ BeginDialog case_number_dialog, 0, 0, 166, 265, "Case number dialog"
   Text 15, 215, 140, 20, " If you are processing a CSR with SNAP, you should NOT check that option."
 EndDialog
 
-BeginDialog CSR_dialog01, 0, 0, 451, 225, "CSR dialog"
-  EditBox 65, 15, 50, 15, CSR_datestamp
-  DropListBox 170, 15, 75, 15, "select one..."+chr(9)+"complete"+chr(9)+"incomplete", CSR_status
-  EditBox 40, 35, 280, 15, HH_comp
-  EditBox 65, 55, 380, 15, earned_income
-  EditBox 70, 75, 375, 15, unearned_income
-  EditBox 70, 95, 375, 15, notes_on_income
-  EditBox 65, 115, 380, 15, notes_on_abawd
-  EditBox 40, 135, 405, 15, assets
-  EditBox 60, 155, 95, 15, SHEL_HEST
-  EditBox 225, 155, 95, 15, COEX_DCEX
-  ButtonGroup ButtonPressed
-    Pushbutton 340, 205, 50, 15, "Next", next_button
-    CancelButton 395, 205, 50, 15
-    PushButton 260, 15, 20, 10, "FS", ELIG_FS_button
-    PushButton 280, 15, 20, 10, "HC", ELIG_HC_button
-    PushButton 335, 15, 45, 10, "prev. panel", prev_panel_button
-    PushButton 335, 25, 45, 10, "next panel", next_panel_button
-    PushButton 395, 15, 45, 10, "prev. memb", prev_memb_button
-    PushButton 395, 25, 45, 10, "next memb", next_memb_button
-    PushButton 5, 160, 25, 10, "SHEL/", SHEL_button
-    PushButton 30, 160, 25, 10, "HEST:", HEST_button
-    PushButton 160, 160, 30, 10, "COEX/", COEX_button
-    PushButton 190, 160, 30, 10, "DCEX:", DCEX_button
-    PushButton 10, 190, 25, 10, "BUSI", BUSI_button
-    PushButton 35, 190, 25, 10, "JOBS", JOBS_button
-    PushButton 35, 200, 25, 10, "UNEA", UNEA_button
-    PushButton 75, 190, 25, 10, "ACCT", ACCT_button
-    PushButton 100, 190, 25, 10, "CARS", CARS_button
-    PushButton 125, 190, 25, 10, "CASH", CASH_button
-    PushButton 150, 190, 25, 10, "OTHR", OTHR_button
-    PushButton 75, 200, 25, 10, "REST", REST_button
-    PushButton 100, 200, 25, 10, "SECU", SECU_button
-    PushButton 125, 200, 25, 10, "TRAN", TRAN_button
-    PushButton 190, 190, 25, 10, "MEMB", MEMB_button
-    PushButton 215, 190, 25, 10, "MEMI", MEMI_button
-    PushButton 240, 190, 25, 10, "REVW", REVW_button
-  GroupBox 255, 5, 50, 25, "ELIG panels:"
-  GroupBox 330, 5, 115, 35, "STAT-based navigation:"
-  Text 5, 20, 55, 10, "CSR datestamp:"
-  Text 125, 20, 40, 10, "CSR status:"
-  Text 5, 40, 35, 10, "HH comp:"
-  Text 5, 60, 55, 10, "Earned income:"
-  Text 5, 80, 60, 10, "Unearned income:"
-  Text 5, 100, 60, 10, "Notes on Income:"
-  Text 5, 120, 60, 10, "Notes on WREG:"
-  Text 5, 140, 30, 10, "Assets:"
-  GroupBox 5, 180, 175, 35, "Income and asset panels"
-  GroupBox 185, 180, 85, 25, "other STAT panels:"
-EndDialog
-
-BeginDialog CSR_dialog02, 0, 0, 451, 260, "CSR dialog"
-  EditBox 100, 25, 150, 15, FIAT_reasons
-  EditBox 50, 45, 395, 15, other_notes
-  EditBox 45, 65, 400, 15, changes
-  EditBox 60, 85, 385, 15, verifs_needed
-  EditBox 60, 105, 385, 15, actions_taken
-  CheckBox 190, 155, 110, 10, "Send forms to AREP?", sent_arep_checkbox
-  CheckBox 190, 170, 175, 10, "Check here to case note grant info from ELIG/FS.", grab_FS_info_checkbox
-  CheckBox 190, 185, 210, 10, "Check here if CSR and cash supplement were used as a HRF.", HRF_checkbox
-  CheckBox 190, 200, 120, 10, "Check here if an eDRS was sent.", eDRS_sent_checkbox
-  ButtonGroup ButtonPressed
-    PushButton 275, 225, 60, 10, "Previous", previous_button
-    OkButton 340, 220, 50, 15
-    CancelButton 395, 220, 50, 15
-    PushButton 260, 15, 20, 10, "FS", ELIG_FS_button
-    PushButton 280, 15, 20, 10, "HC", ELIG_HC_button
-    PushButton 335, 15, 45, 10, "prev. panel", prev_panel_button
-    PushButton 395, 15, 45, 10, "prev. memb", prev_memb_button
-    PushButton 335, 25, 45, 10, "next panel", next_panel_button
-    PushButton 395, 25, 45, 10, "next memb", next_memb_button
-    PushButton 10, 140, 25, 10, "BUSI", BUSI_button
-    PushButton 35, 140, 25, 10, "JOBS", JOBS_button
-    PushButton 75, 140, 25, 10, "ACCT", ACCT_button
-    PushButton 100, 140, 25, 10, "CARS", CARS_button
-    PushButton 125, 140, 25, 10, "CASH", CASH_button
-    PushButton 150, 140, 25, 10, "OTHR", OTHR_button
-    PushButton 190, 140, 25, 10, "MEMB", MEMB_button
-    PushButton 215, 140, 25, 10, "MEMI", MEMI_button
-    PushButton 240, 140, 25, 10, "REVW", REVW_button
-    PushButton 35, 150, 25, 10, "UNEA", UNEA_button
-    PushButton 75, 150, 25, 10, "REST", REST_button
-    PushButton 100, 150, 25, 10, "SECU", SECU_button
-    PushButton 125, 150, 25, 10, "TRAN", TRAN_button
-  EditBox 60, 180, 90, 15, MAEPD_premium
-  CheckBox 10, 200, 65, 10, "Emailed MADE?", MADE_checkbox
-  ButtonGroup ButtonPressed
-    PushButton 80, 200, 65, 10, "SIR mail", SIR_mail_button
-  Text 5, 30, 95, 10, "FIAT reasons (if applicable):"
-  Text 5, 50, 40, 10, "Other notes:"
-  Text 5, 70, 35, 10, "Changes?:"
-  Text 5, 90, 50, 10, "Verifs needed:"
-  Text 5, 110, 50, 10, "Actions taken:"
-  GroupBox 5, 130, 175, 35, "Income and asset panels"
-  GroupBox 185, 130, 85, 25, "other STAT panels:"
-  GroupBox 5, 170, 150, 45, "If MA-EPD..."
-  Text 10, 185, 50, 10, "New premium:"
-  GroupBox 255, 5, 50, 25, "ELIG panels:"
-  GroupBox 330, 5, 115, 35, "STAT-based navigation:"
-EndDialog
-
-'VARIABLES WHICH NEED DECLARING------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-HH_memb_row = 5
-Dim row
-Dim col
-
-'THE SCRIPT------------------------------------------------------------------------------------------------------------------------------------------------
-'Connecting to MAXIS
-EMConnect ""
-'Searching for the case_number variable
-call MAXIS_case_number_finder(case_number)
-'Searching for the footer month and footer year
-call MAXIS_footer_finder(MAXIS_footer_month, MAXIS_footer_year)
-
-'Showing the case number dialog
-DO
-	err_msg = ""
 	Dialog case_number_dialog
 		cancel_confirmation
 		If case_number = "" or IsNumeric(case_number) = False or len(case_number) > 8 then err_msg = err_msg & "* You need to type a valid case number."
@@ -271,6 +172,58 @@ DO
 			err_msg = ""
 			Do
 				Do
+				
+BeginDialog CSR_dialog01, 0, 0, 451, 225, "CSR dialog"
+  EditBox 65, 15, 50, 15, CSR_datestamp
+  DropListBox 170, 15, 75, 15, "select one..."+chr(9)+"complete"+chr(9)+"incomplete", CSR_status
+  EditBox 40, 35, 280, 15, HH_comp
+  EditBox 65, 55, 380, 15, earned_income
+  EditBox 70, 75, 375, 15, unearned_income
+  EditBox 70, 95, 375, 15, notes_on_income
+  EditBox 65, 115, 380, 15, notes_on_abawd
+  EditBox 40, 135, 405, 15, assets
+  EditBox 60, 155, 95, 15, SHEL_HEST
+  EditBox 225, 155, 95, 15, COEX_DCEX
+  ButtonGroup ButtonPressed
+    Pushbutton 340, 205, 50, 15, "Next", next_button
+    CancelButton 395, 205, 50, 15
+    PushButton 260, 15, 20, 10, "FS", ELIG_FS_button
+    PushButton 280, 15, 20, 10, "HC", ELIG_HC_button
+    PushButton 335, 15, 45, 10, "prev. panel", prev_panel_button
+    PushButton 335, 25, 45, 10, "next panel", next_panel_button
+    PushButton 395, 15, 45, 10, "prev. memb", prev_memb_button
+    PushButton 395, 25, 45, 10, "next memb", next_memb_button
+    PushButton 5, 160, 25, 10, "SHEL/", SHEL_button
+    PushButton 30, 160, 25, 10, "HEST:", HEST_button
+    PushButton 160, 160, 30, 10, "COEX/", COEX_button
+    PushButton 190, 160, 30, 10, "DCEX:", DCEX_button
+    PushButton 10, 190, 25, 10, "BUSI", BUSI_button
+    PushButton 35, 190, 25, 10, "JOBS", JOBS_button
+    PushButton 35, 200, 25, 10, "UNEA", UNEA_button
+    PushButton 75, 190, 25, 10, "ACCT", ACCT_button
+    PushButton 100, 190, 25, 10, "CARS", CARS_button
+    PushButton 125, 190, 25, 10, "CASH", CASH_button
+    PushButton 150, 190, 25, 10, "OTHR", OTHR_button
+    PushButton 75, 200, 25, 10, "REST", REST_button
+    PushButton 100, 200, 25, 10, "SECU", SECU_button
+    PushButton 125, 200, 25, 10, "TRAN", TRAN_button
+    PushButton 190, 190, 25, 10, "MEMB", MEMB_button
+    PushButton 215, 190, 25, 10, "MEMI", MEMI_button
+    PushButton 240, 190, 25, 10, "REVW", REVW_button
+  GroupBox 255, 5, 50, 25, "ELIG panels:"
+  GroupBox 330, 5, 115, 35, "STAT-based navigation:"
+  Text 5, 20, 55, 10, "CSR datestamp:"
+  Text 125, 20, 40, 10, "CSR status:"
+  Text 5, 40, 35, 10, "HH comp:"
+  Text 5, 60, 55, 10, "Earned income:"
+  Text 5, 80, 60, 10, "Unearned income:"
+  Text 5, 100, 60, 10, "Notes on Income:"
+  Text 5, 120, 60, 10, "Notes on WREG:"
+  Text 5, 140, 30, 10, "Assets:"
+  GroupBox 5, 180, 175, 35, "Income and asset panels"
+  GroupBox 185, 180, 85, 25, "other STAT panels:"
+EndDialog				
+				
 					Dialog CSR_dialog01
 					cancel_confirmation
 					IF ButtonPressed = JOBS_button THEN 
@@ -291,6 +244,56 @@ DO
 		DO
 			DO
 				DO
+				
+BeginDialog CSR_dialog02, 0, 0, 451, 260, "CSR dialog"
+  EditBox 100, 25, 150, 15, FIAT_reasons
+  EditBox 50, 45, 395, 15, other_notes
+  EditBox 45, 65, 400, 15, changes
+  EditBox 60, 85, 385, 15, verifs_needed
+  EditBox 60, 105, 385, 15, actions_taken
+  CheckBox 190, 155, 110, 10, "Send forms to AREP?", sent_arep_checkbox
+  CheckBox 190, 170, 175, 10, "Check here to case note grant info from ELIG/FS.", grab_FS_info_checkbox
+  CheckBox 190, 185, 210, 10, "Check here if CSR and cash supplement were used as a HRF.", HRF_checkbox
+  CheckBox 190, 200, 120, 10, "Check here if an eDRS was sent.", eDRS_sent_checkbox
+  ButtonGroup ButtonPressed
+    PushButton 275, 225, 60, 10, "Previous", previous_button
+    OkButton 340, 220, 50, 15
+    CancelButton 395, 220, 50, 15
+    PushButton 260, 15, 20, 10, "FS", ELIG_FS_button
+    PushButton 280, 15, 20, 10, "HC", ELIG_HC_button
+    PushButton 335, 15, 45, 10, "prev. panel", prev_panel_button
+    PushButton 395, 15, 45, 10, "prev. memb", prev_memb_button
+    PushButton 335, 25, 45, 10, "next panel", next_panel_button
+    PushButton 395, 25, 45, 10, "next memb", next_memb_button
+    PushButton 10, 140, 25, 10, "BUSI", BUSI_button
+    PushButton 35, 140, 25, 10, "JOBS", JOBS_button
+    PushButton 75, 140, 25, 10, "ACCT", ACCT_button
+    PushButton 100, 140, 25, 10, "CARS", CARS_button
+    PushButton 125, 140, 25, 10, "CASH", CASH_button
+    PushButton 150, 140, 25, 10, "OTHR", OTHR_button
+    PushButton 190, 140, 25, 10, "MEMB", MEMB_button
+    PushButton 215, 140, 25, 10, "MEMI", MEMI_button
+    PushButton 240, 140, 25, 10, "REVW", REVW_button
+    PushButton 35, 150, 25, 10, "UNEA", UNEA_button
+    PushButton 75, 150, 25, 10, "REST", REST_button
+    PushButton 100, 150, 25, 10, "SECU", SECU_button
+    PushButton 125, 150, 25, 10, "TRAN", TRAN_button
+  EditBox 60, 180, 90, 15, MAEPD_premium
+  CheckBox 10, 200, 65, 10, "Emailed MADE?", MADE_checkbox
+  ButtonGroup ButtonPressed
+    PushButton 80, 200, 65, 10, "SIR mail", SIR_mail_button
+  Text 5, 30, 95, 10, "FIAT reasons (if applicable):"
+  Text 5, 50, 40, 10, "Other notes:"
+  Text 5, 70, 35, 10, "Changes?:"
+  Text 5, 90, 50, 10, "Verifs needed:"
+  Text 5, 110, 50, 10, "Actions taken:"
+  GroupBox 5, 130, 175, 35, "Income and asset panels"
+  GroupBox 185, 130, 85, 25, "other STAT panels:"
+  GroupBox 5, 170, 150, 45, "If MA-EPD..."
+  Text 10, 185, 50, 10, "New premium:"
+  GroupBox 255, 5, 50, 25, "ELIG panels:"
+  GroupBox 330, 5, 115, 35, "STAT-based navigation:"
+EndDialog				
 					Dialog CSR_dialog02
 					cancel_confirmation
 					IF ButtonPressed = JOBS_button THEN 
