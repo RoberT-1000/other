@@ -116,6 +116,10 @@ objExcel.Cells(1, 6).Value = "GAIn SNAP Budget"
 objExcel.Cells(1, 7).Value = "GA Monthly Grant"
 objExcel.Cells(1, 8).Value = "GA Issuance Amt"
 
+FOR i = 1 TO 8
+	objExcel.Cells(1, i).Font.Bold = TRUE
+NEXT
+
 excel_row = 2
 FOR EACH worker IN worker_array
 	IF worker = "" THEN EXIT FOR
