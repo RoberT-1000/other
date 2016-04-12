@@ -110,7 +110,10 @@ objExcel.DisplayAlerts = True
 ObjExcel.Cells(1, 1).Value = "X Number"
 ObjExcel.Cells(1, 2).Value = "CASE NUMBER"
 ObjExcel.Cells(1, 3).Value = "NAME"
-ObjExcel.Cells(1, 4).Value = "Error on SNAP?"
+ObjExcel.Cells(1, 4).Value = "Discrepancy?"
+objExcel.Cells(1, 5).Value = "In SNAP Budget"
+objExcel.Cells(1, 6).Value = "Monthly Grant"
+objExcel.Cells(1, 7).Value = "Issuance Amt"
 
 excel_row = 2
 FOR EACH worker IN worker_array
