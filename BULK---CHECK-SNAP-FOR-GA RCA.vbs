@@ -221,13 +221,13 @@ FOR EACH case_number IN case_array
 			IF bene_date = cash_revw_date OR bene_date = snap_revw_date THEN
 				objExcel.Cells(excel_row, 5).Value = "REVW MONTH"
 			ELSEIF bene_date <> cash_revw_date AND bene_date <> snap_revw_date THEN
-				objExcel.Cells(excel_row, 5).Value = ("Yes, GA")
+				objExcel.Cells(excel_row, 5).Value = ("Yes")
 				objExcel.Cells(excel_row, 6).Value = ("SNAP Budg = " & pa_amount)
 				objExcel.Cells(excel_row, 7).Value = ("Mo Grant = " & ga_amount)
 				objExcel.Cells(excel_row, 8).Value = ("Amt Paid = " & ga_to_be_paid)
 			END IF
 		ELSEIF pa_amount = ga_amount AND pa_amount = ga_to_be_paid THEN
-			objExcel.Cells(excel_row, 5).Value = ("No, GA")
+			objExcel.Cells(excel_row, 5).Value = ("No")
 			objExcel.Cells(excel_row, 6).Value = ("SNAP Budg = " & pa_amount)
 			objExcel.Cells(excel_row, 7).Value = ("Mo Grant = " & ga_amount)
 			objExcel.Cells(excel_row, 8).Value = ("Amt Paid = " & ga_to_be_paid)
