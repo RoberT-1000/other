@@ -199,8 +199,10 @@ FOR EACH case_number IN case_array
 		EMWriteScreen "GASM", 20, 70
 		transmit
 			CALL find_variable("Monthly Grant............$", ga_amount, 9)
+			CALL find_variable("Amount To Be Paid........$", ga_to_be_paid, 9)
 		ga_amount = trim(ga_amount)
-		IF pa_amount <> ga_amount THEN
+		ga_to_be_paid = trim(ga_to_be_paid)
+		IF pa_amount <> ga_amount AND pa_amount <> ga_to_be_paid THEN
 			CALL navigate_to_screen("STAT", "REVW")
 			ERRR_screen_check
 			EMReadScreen cash_revw_date, 8, 9, 37
@@ -211,10 +213,13 @@ FOR EACH case_number IN case_array
 			IF bene_date = cash_revw_date OR bene_date = snap_revw_date THEN
 				objExcel.Cells(excel_row, 4).Value = "REVW MONTH"
 			ELSEIF bene_date <> cash_revw_date AND bene_date <> snap_revw_date THEN
-				objExcel.Cells(excel_row, 4).Value = ("Yes, GA. SNAP Budg = " & pa_amount & "; GA Amount = " & ga_amount)
+				objExcel.Cells(excel_row, 4).Value = ("Yes, GA")
+				objExcel.Cells(excel_row, 5).Value = ("SNAP Budg = " & pa_amount)
+				objExcel.Cells(excel_row, 6).Value = ("Monthly Grant = " & ga_amount)
+				objExcel.Cells(excel_row, 7).Value = ("Amt Paid = " & ga_to_be_paid)
 			END IF
-		ELSEIF pa_amount = ga_amount THEN
-			objExcel.Cells(excel_row, 4).Value = ("Budgetted for SNAP: " & pa_amount & "; GA Amount: " & ga_amount)
+		ELSEIF pa_amount = ga_amount AND pa_amount = ga_to_be_paid THEN
+			objExcel.Cells(excel_row, 4).Value = ("Budgetted for SNAP: " & pa_amount & "; GA Amount: " & ga_amount & "; GA Issued: " & ga_to_be_paid)
 		END IF
 	ELSEIF cash_prog = "RCA" THEN
 		CALL navigate_to_screen("ELIG", "RCA")
