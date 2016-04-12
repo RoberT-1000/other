@@ -264,7 +264,7 @@ FOR EACH case_number IN case_array
 
 NEXT
 
-FOR i = 1 to 4
+FOR i = 1 to 7
 	objExcel.Columns(i).AutoFit()
 NEXT
 
