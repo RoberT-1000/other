@@ -44,7 +44,7 @@ BeginDialog ACTIONS_main_menu_dialog, 0, 0, 381, 240, "ACTIONS Main Menu"
     PushButton 5, 125, 60, 10, "PALC calculator", ACTIONS_PALC_calculator_button
     PushButton 5, 145, 60, 10, "Prorate Support", ACTIONS_prorate_support_button
     PushButton 5, 165, 65, 10, "Redirect Docs", ACTIONS_redirection_docs_button
-    PushButton 5, 185, 75, 10, "Unreimb/Unins Docs", ACTIONS_un_un_button
+    PushButton 5, 185, 75, 10, "Check SNAP for GA", BULK_test_button
     CancelButton 325, 220, 50, 15
     PushButton 300, 5, 75, 10, "PRISM Scripts in SIR", SIR_button
   Text 100, 25, 270, 10, "-- Sends Affidavits of Serivce to multiple participants on the case."
@@ -83,4 +83,4 @@ IF ButtonPressed = ACTIONS_redirection_docs_button 			THEN CALL run_from_GitHub(
 '	'CreateObject("WScript.Shell").Run("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/REDIRECTION%20DOCS.vbs")
 '	CALL run_from_GitHub("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/REDIRECTION DOCS.vbs")
 'End IF
-IF ButtonPressed = ACTIONS_un_un_button 					THEN CALL run_from_GitHub(script_repository & "ACTIONS/ACTIONS - UNREIMBURSED UNINSURED DOCS.vbs")
+IF ButtonPressed = BULK_test_button 					THEN CALL run_from_GitHub("https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/BULK---CHECK-SNAP-FOR-GA%20RCA.vbs")
