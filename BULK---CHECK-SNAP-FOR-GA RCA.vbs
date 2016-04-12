@@ -110,10 +110,11 @@ objExcel.DisplayAlerts = True
 ObjExcel.Cells(1, 1).Value = "X Number"
 ObjExcel.Cells(1, 2).Value = "CASE NUMBER"
 ObjExcel.Cells(1, 3).Value = "NAME"
-ObjExcel.Cells(1, 4).Value = "Discrepancy?"
-objExcel.Cells(1, 5).Value = "In SNAP Budget"
-objExcel.Cells(1, 6).Value = "Monthly Grant"
-objExcel.Cells(1, 7).Value = "Issuance Amt"
+ObjExcel.Cells(1, 4).Value = "RCA Discrepancy?"
+ObjExcel.Cells(1, 5).Value = "GA Discrepancy?"
+objExcel.Cells(1, 6).Value = "GAIn SNAP Budget"
+objExcel.Cells(1, 7).Value = "GA Monthly Grant"
+objExcel.Cells(1, 8).Value = "GA Issuance Amt"
 
 excel_row = 2
 FOR EACH worker IN worker_array
@@ -214,15 +215,18 @@ FOR EACH case_number IN case_array
 			cash_revw_date = replace(cash_revw_date, " 01 ", "/")
 			snap_revw_date = replace(snap_revw_date, " 01 ", "/")
 			IF bene_date = cash_revw_date OR bene_date = snap_revw_date THEN
-				objExcel.Cells(excel_row, 4).Value = "REVW MONTH"
+				objExcel.Cells(excel_row, 5).Value = "REVW MONTH"
 			ELSEIF bene_date <> cash_revw_date AND bene_date <> snap_revw_date THEN
-				objExcel.Cells(excel_row, 4).Value = ("Yes, GA")
-				objExcel.Cells(excel_row, 5).Value = ("SNAP Budg = " & pa_amount)
-				objExcel.Cells(excel_row, 6).Value = ("Monthly Grant = " & ga_amount)
-				objExcel.Cells(excel_row, 7).Value = ("Amt Paid = " & ga_to_be_paid)
+				objExcel.Cells(excel_row, 5).Value = ("Yes, GA")
+				objExcel.Cells(excel_row, 6).Value = ("SNAP Budg = " & pa_amount)
+				objExcel.Cells(excel_row, 7).Value = ("Mo Grant = " & ga_amount)
+				objExcel.Cells(excel_row, 8).Value = ("Amt Paid = " & ga_to_be_paid)
 			END IF
 		ELSEIF pa_amount = ga_amount AND pa_amount = ga_to_be_paid THEN
-			objExcel.Cells(excel_row, 4).Value = ("Budgetted for SNAP: " & pa_amount & "; GA Amount: " & ga_amount & "; GA Issued: " & ga_to_be_paid)
+			objExcel.Cells(excel_row, 5).Value = ("No, GA")
+			objExcel.Cells(excel_row, 6).Value = ("SNAP Budg = " & pa_amount)
+			objExcel.Cells(excel_row, 7).Value = ("Mo Grant = " & ga_amount)
+			objExcel.Cells(excel_row, 8).Value = ("Amt Paid = " & ga_to_be_paid)
 		END IF
 	ELSEIF cash_prog = "RCA" THEN
 		CALL navigate_to_screen("ELIG", "RCA")
@@ -264,7 +268,7 @@ FOR EACH case_number IN case_array
 
 NEXT
 
-FOR i = 1 to 7
+FOR i = 1 to 8
 	objExcel.Columns(i).AutoFit()
 NEXT
 
