@@ -78,12 +78,13 @@ Function declare_NOTES_menu_dialog(script_array)
 End function
 'END CUSTOM FUNCTIONS=======================================================================================================
 
-'VARIABLES TO DECLARE=======================================================================================================
-
-'Declaring the variable names to cut down on the number of arguments that need to be passed through the function.
-DIM ButtonPressed
-DIM SIR_instructions_button
-dim NOTES_dialog
+IF run_from_favorites <> TRUE THEN 
+	'VARIABLES TO DECLARE=======================================================================================================
+	'Declaring the variable names to cut down on the number of arguments that need to be passed through the function.
+	DIM ButtonPressed
+	DIM SIR_instructions_button
+	dim NOTES_dialog
+END IF
 
 script_array_0_to_C = array()
 script_array_D_to_F = array()
