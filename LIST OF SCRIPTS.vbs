@@ -14,7 +14,7 @@ notes_url = "https://raw.githubusercontent.com/MN-Script-Team/DHS-MAXIS-Scripts/
 'grabbing all the notices scripts
 notices_url = "https://raw.githubusercontent.com/MN-Script-Team/DHS-MAXIS-Scripts/master/Script%20Files/NOTICES/NOTICES%20-%20MAIN%20MENU.vbs"
 
-all_url_array = actions_url & "UUDDLRLRBA" & bulk_url & "UUDDLRLRBA" & notes_array & "UUDDLRLRBA" & notices_array
+all_url_array = actions_url & "UUDDLRLRBA" & bulk_url & "UUDDLRLRBA" & notes_url & "UUDDLRLRBA" & notices_url
 all_url_array = split(all_url_array, "UUDDLRLRBA")
 
 FOR EACH menu_url IN all_url_array
