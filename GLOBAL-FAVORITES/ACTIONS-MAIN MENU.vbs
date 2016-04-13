@@ -1,5 +1,3 @@
-MsgBox run_from_favorites
-
 IF run_from_favorites <> TRUE THEN 
 	'STATS GATHERING----------------------------------------------------------------------------------------------------
 	name_of_script = "ACTIONS - MAIN MENU.vbs"
