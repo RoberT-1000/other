@@ -18,7 +18,6 @@ all_url_array = actions_url & "UUDDLRLRBA" & bulk_url & "UUDDLRLRBA" & notes_url
 all_url_array = split(all_url_array, "UUDDLRLRBA")
 
 FOR EACH menu_url IN all_url_array
-	msgbox menu_url
 	get_all_scripts.open "GET", menu_url, FALSE
 	get_all_scripts.send			
 	IF get_all_scripts.Status = 200 THEN	
@@ -31,3 +30,6 @@ FOR EACH menu_url IN all_url_array
 	END IF
 NEXT	
 
+FOR EACH script_name IN all_scripts_array
+	MsgBox script_name
+NEXT
