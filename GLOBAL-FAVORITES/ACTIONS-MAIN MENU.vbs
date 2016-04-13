@@ -1,83 +1,82 @@
-'STATS GATHERING----------------------------------------------------------------------------------------------------
-name_of_script = "ACTIONS - MAIN MENU.vbs"
-start_time = timer 
-
-'LOADING FUNCTIONS LIBRARY FROM GITHUB REPOSITORY===========================================================================
-IF IsEmpty(FuncLib_URL) = TRUE THEN	'Shouldn't load FuncLib if it already loaded once
-	IF run_locally = FALSE or run_locally = "" THEN		'If the scripts are set to run locally, it skips this and uses an FSO below.
-		IF use_master_branch = TRUE THEN			'If the default_directory is C:\DHS-MAXIS-Scripts\Script Files, you're probably a scriptwriter and should use the master branch.
-			FuncLib_URL = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/master/MASTER%20FUNCTIONS%20LIBRARY.vbs"
-		Else																		'Everyone else should use the release branch.
-			FuncLib_URL = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/RELEASE/MASTER%20FUNCTIONS%20LIBRARY.vbs"
-		End if
-		SET req = CreateObject("Msxml2.XMLHttp.6.0")				'Creates an object to get a FuncLib_URL
-		req.open "GET", FuncLib_URL, FALSE							'Attempts to open the FuncLib_URL
-		req.send													'Sends request
-		IF req.Status = 200 THEN									'200 means great success
-			Set fso = CreateObject("Scripting.FileSystemObject")	'Creates an FSO
-			Execute req.responseText								'Executes the script code
-		ELSE														'Error message, tells user to try to reach github.com, otherwise instructs to contact Veronica with details (and stops script).
-			MsgBox 	"Something has gone wrong. The code stored on GitHub was not able to be reached." & vbCr &_
-					vbCr & _
-					"Before contacting Veronica Cary, please check to make sure you can load the main page at www.GitHub.com." & vbCr &_
-					vbCr & _
-					"If you can reach GitHub.com, but this script still does not work, ask an alpha user to contact Veronica Cary and provide the following information:" & vbCr &_
-					vbTab & "- The name of the script you are running." & vbCr &_
-					vbTab & "- Whether or not the script is ""erroring out"" for any other users." & vbCr &_
-					vbTab & "- The name and email for an employee from your IT department," & vbCr & _
-					vbTab & vbTab & "responsible for network issues." & vbCr &_
-					vbTab & "- The URL indicated below (a screenshot should suffice)." & vbCr &_
-					vbCr & _
-					"Veronica will work with your IT department to try and solve this issue, if needed." & vbCr &_
-					vbCr &_
-					"URL: " & FuncLib_URL
-					script_end_procedure("Script ended due to error connecting to GitHub.")
-		END IF
-	ELSE
-		FuncLib_URL = "C:\BZS-FuncLib\MASTER FUNCTIONS LIBRARY.vbs"
-		Set run_another_script_fso = CreateObject("Scripting.FileSystemObject")
-		Set fso_command = run_another_script_fso.OpenTextFile(FuncLib_URL)
-		text_from_the_other_script = fso_command.ReadAll
-		fso_command.Close
-		Execute text_from_the_other_script
-	END IF
-END IF
-'END FUNCTIONS LIBRARY BLOCK================================================================================================
-
-
-'CUSTOM FUNCTIONS===========================================================================================================
-Function declare_ACTIONS_menu_dialog(script_array)
-	BeginDialog ACTIONS_dialog, 0, 0, 516, 340, "NOTICES Scripts"
-	 	Text 5, 5, 435, 10, "Notices scripts main menu: select the script to run from the choices below."
-	  	ButtonGroup ButtonPressed
-		 	PushButton 015, 35, 40, 15, "ACTIONS", 				ACTIONS_main_button
-		 	'PushButton 055, 35, 60, 15, "Additional Actions", 				Addtional_actions_button    'to be used in the future when a split is needed
-		 	PushButton 445, 10, 65, 10, "SIR instructions", 	SIR_instructions_button
-			PushButton 395, 10, 45, 10, "UTILITIES",            UTILITIES_SCRIPTS_button
-		'This starts here, but it shouldn't end here :)
-		vert_button_position = 70
-
-		For current_script = 0 to ubound(script_array)
-			'Displays the button and text description-----------------------------------------------------------------------------------------------------------------------------
-			'FUNCTION		HORIZ. ITEM POSITION								VERT. ITEM POSITION		ITEM WIDTH									ITEM HEIGHT		ITEM TEXT/LABEL										BUTTON VARIABLE
-			PushButton 		5, 													vert_button_position, 	script_array(current_script).button_size, 	10, 			script_array(current_script).script_name, 			button_placeholder
-			Text 			script_array(current_script).button_size + 10, 		vert_button_position, 	500, 										10, 			"--- " & script_array(current_script).description
-			'----------
-			vert_button_position = vert_button_position + 15	'Needs to increment the vert_button_position by 15px (used by both the text and buttons)
-			'----------
-			script_array(current_script).button = button_placeholder	'The .button property won't carry through the function. This allows it to escape the function. Thanks VBScript.
-			button_placeholder = button_placeholder + 1
-		next
-
-		CancelButton 460, 320, 50, 15
-		GroupBox 5, 20, 205, 35, "NOTICES Sub-Menus"
-	EndDialog
-End function
-'END CUSTOM FUNCTIONS=======================================================================================================
-
-'VARIABLES TO DECLARE=======================================================================================================
-
 IF run_from_favorites <> TRUE THEN 
+	'STATS GATHERING----------------------------------------------------------------------------------------------------
+	name_of_script = "ACTIONS - MAIN MENU.vbs"
+	start_time = timer 
+	
+	'LOADING FUNCTIONS LIBRARY FROM GITHUB REPOSITORY===========================================================================
+	IF IsEmpty(FuncLib_URL) = TRUE THEN	'Shouldn't load FuncLib if it already loaded once
+		IF run_locally = FALSE or run_locally = "" THEN		'If the scripts are set to run locally, it skips this and uses an FSO below.
+			IF use_master_branch = TRUE THEN			'If the default_directory is C:\DHS-MAXIS-Scripts\Script Files, you're probably a scriptwriter and should use the master branch.
+				FuncLib_URL = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/master/MASTER%20FUNCTIONS%20LIBRARY.vbs"
+			Else																		'Everyone else should use the release branch.
+				FuncLib_URL = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/RELEASE/MASTER%20FUNCTIONS%20LIBRARY.vbs"
+			End if
+			SET req = CreateObject("Msxml2.XMLHttp.6.0")				'Creates an object to get a FuncLib_URL
+			req.open "GET", FuncLib_URL, FALSE							'Attempts to open the FuncLib_URL
+			req.send													'Sends request
+			IF req.Status = 200 THEN									'200 means great success
+				Set fso = CreateObject("Scripting.FileSystemObject")	'Creates an FSO
+				Execute req.responseText								'Executes the script code
+			ELSE														'Error message, tells user to try to reach github.com, otherwise instructs to contact Veronica with details (and stops script).
+				MsgBox 	"Something has gone wrong. The code stored on GitHub was not able to be reached." & vbCr &_
+						vbCr & _
+						"Before contacting Veronica Cary, please check to make sure you can load the main page at www.GitHub.com." & vbCr &_
+						vbCr & _
+						"If you can reach GitHub.com, but this script still does not work, ask an alpha user to contact Veronica Cary and provide the following information:" & vbCr &_
+						vbTab & "- The name of the script you are running." & vbCr &_
+						vbTab & "- Whether or not the script is ""erroring out"" for any other users." & vbCr &_
+						vbTab & "- The name and email for an employee from your IT department," & vbCr & _
+						vbTab & vbTab & "responsible for network issues." & vbCr &_
+						vbTab & "- The URL indicated below (a screenshot should suffice)." & vbCr &_
+						vbCr & _
+						"Veronica will work with your IT department to try and solve this issue, if needed." & vbCr &_
+						vbCr &_
+						"URL: " & FuncLib_URL
+						script_end_procedure("Script ended due to error connecting to GitHub.")
+			END IF
+		ELSE
+			FuncLib_URL = "C:\BZS-FuncLib\MASTER FUNCTIONS LIBRARY.vbs"
+			Set run_another_script_fso = CreateObject("Scripting.FileSystemObject")
+			Set fso_command = run_another_script_fso.OpenTextFile(FuncLib_URL)
+			text_from_the_other_script = fso_command.ReadAll
+			fso_command.Close
+			Execute text_from_the_other_script
+		END IF
+	END IF
+	'END FUNCTIONS LIBRARY BLOCK================================================================================================
+	
+	
+	'CUSTOM FUNCTIONS===========================================================================================================
+	Function declare_ACTIONS_menu_dialog(script_array)
+		BeginDialog ACTIONS_dialog, 0, 0, 516, 340, "NOTICES Scripts"
+			Text 5, 5, 435, 10, "Notices scripts main menu: select the script to run from the choices below."
+			ButtonGroup ButtonPressed
+				PushButton 015, 35, 40, 15, "ACTIONS", 				ACTIONS_main_button
+				'PushButton 055, 35, 60, 15, "Additional Actions", 				Addtional_actions_button    'to be used in the future when a split is needed
+				PushButton 445, 10, 65, 10, "SIR instructions", 	SIR_instructions_button
+				PushButton 395, 10, 45, 10, "UTILITIES",            UTILITIES_SCRIPTS_button
+			'This starts here, but it shouldn't end here :)
+			vert_button_position = 70
+	
+			For current_script = 0 to ubound(script_array)
+				'Displays the button and text description-----------------------------------------------------------------------------------------------------------------------------
+				'FUNCTION		HORIZ. ITEM POSITION								VERT. ITEM POSITION		ITEM WIDTH									ITEM HEIGHT		ITEM TEXT/LABEL										BUTTON VARIABLE
+				PushButton 		5, 													vert_button_position, 	script_array(current_script).button_size, 	10, 			script_array(current_script).script_name, 			button_placeholder
+				Text 			script_array(current_script).button_size + 10, 		vert_button_position, 	500, 										10, 			"--- " & script_array(current_script).description
+				'----------
+				vert_button_position = vert_button_position + 15	'Needs to increment the vert_button_position by 15px (used by both the text and buttons)
+				'----------
+				script_array(current_script).button = button_placeholder	'The .button property won't carry through the function. This allows it to escape the function. Thanks VBScript.
+				button_placeholder = button_placeholder + 1
+			next
+	
+			CancelButton 460, 320, 50, 15
+			GroupBox 5, 20, 205, 35, "NOTICES Sub-Menus"
+		EndDialog
+	End function
+	'END CUSTOM FUNCTIONS=======================================================================================================
+	
+	'VARIABLES TO DECLARE=======================================================================================================
 	'Declaring the variable names to cut down on the number of arguments that need to be passed through the function.
 	DIM ButtonPressed
 	DIM UTILITIES_SCRIPTS_button
