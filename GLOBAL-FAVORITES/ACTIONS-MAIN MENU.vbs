@@ -77,11 +77,13 @@ End function
 
 'VARIABLES TO DECLARE=======================================================================================================
 
-'Declaring the variable names to cut down on the number of arguments that need to be passed through the function.
-DIM ButtonPressed
-DIM UTILITIES_SCRIPTS_button
-DIM SIR_instructions_button
-dim ACTIONS_dialog
+IF run_from_favorites <> TRUE THEN 
+	'Declaring the variable names to cut down on the number of arguments that need to be passed through the function.
+	DIM ButtonPressed
+	DIM UTILITIES_SCRIPTS_button
+	DIM SIR_instructions_button
+	dim ACTIONS_dialog
+END IF
 
 script_array_ACTIONS_main = array()
 script_array_ACTIONS_list = array()
