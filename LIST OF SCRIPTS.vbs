@@ -19,13 +19,13 @@ all_url_array = split(all_url_array, "UUDDLRLRBA")
 
 FOR EACH menu_url IN all_url_array
 	msgbox menu_url
-	get_all_scripts.open "GET", menu_url, FALSE						'Attempts to open the text file URL
-	get_all_scripts.send													'Sends request
-	IF get_all_scripts.Status = 200 THEN									'200 means great success
-		Set fso = CreateObject("Scripting.FileSystemObject")				'Creates an FSO
-		all_scripts = get_all_scripts.responseText								'Executes the script code
+	get_all_scripts.open "GET", menu_url, FALSE
+	get_all_scripts.send			
+	IF get_all_scripts.Status = 200 THEN	
+		Set fso = CreateObject("Scripting.FileSystemObject")		
+		all_scripts = get_all_scripts.responseText			
 		all_scripts_array = all_scripts_array & script_array
-	ELSE																	'Error message, tells user to try to reach github.com, otherwise instructs to contact Veronica with details (and stops script).
+	ELSE							
 		MsgBox 	"Something went wrong grabbing ACTIONS scripts."
 		EXIT FOR
 	END IF
