@@ -268,7 +268,7 @@ script_array_ACTIONS_main(script_num).description			= "TIKLS for TYMA report for
 
 
 
-IF run_from_favorites <> TRUE
+IF run_from_favorites <> TRUE THEN
 	'Starting these with a very high number, higher than the normal possible amount of buttons.
 	'	We're doing this because we want to assign a value to each button pressed, and we want
 	'	that value to change with each button. The button_placeholder will be placed in the .button
