@@ -18,6 +18,7 @@ all_url_array = actions_url & "UUDDLRLRBA" & bulk_url & "UUDDLRLRBA" & notes_arr
 all_url_array = split(all_url_array, "UUDDLRLRBA")
 
 FOR EACH menu_url IN all_url_array
+	msgbox menu_url
 	get_all_scripts.open "GET", menu_url, FALSE						'Attempts to open the text file URL
 	get_all_scripts.send													'Sends request
 	IF get_all_scripts.Status = 200 THEN									'200 means great success
