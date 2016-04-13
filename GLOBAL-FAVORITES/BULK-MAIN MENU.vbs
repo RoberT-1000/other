@@ -74,12 +74,13 @@ Function declare_BULK_menu_dialog(script_array)
 End function
 'END CUSTOM FUNCTIONS=======================================================================================================
 
-'VARIABLES TO DECLARE=======================================================================================================
-
-'Declaring the variable names to cut down on the number of arguments that need to be passed through the function.
-DIM ButtonPressed
-DIM SIR_instructions_button
-dim BULK_dialog
+IF run_from_favorites <> TRUE THEN 
+	'VARIABLES TO DECLARE=======================================================================================================
+	'Declaring the variable names to cut down on the number of arguments that need to be passed through the function.
+	DIM ButtonPressed
+	DIM SIR_instructions_button
+	dim BULK_dialog
+END IF
 
 script_array_BULK_main = array()
 script_array_BULK_list = array()
