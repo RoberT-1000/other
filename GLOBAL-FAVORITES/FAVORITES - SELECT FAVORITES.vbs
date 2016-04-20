@@ -24,7 +24,6 @@ start_time = timer
 '>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<
 '>>> THIS SCRIPT DOES NOT LOAD FUNC LIB <<<
 '>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<
-
 class script
 	public script_name
 	public file_name
@@ -35,6 +34,10 @@ class script
 		button_size = round ( len( script_name ) * 3.5 ) + 10
 	end property
 end class
+
+'>>> Determining the location of the user's favorites list. 
+'>>> This value should be stored in Global Variables for state-wide deployment.
+location_of_favorites_text_file = "H:\my favorite scripts.txt"
 
 '>>> Telling the script main menus that we do not need to call FuncLib or build the dialogs
 run_from_favorites = TRUE
@@ -140,9 +143,9 @@ NEXT
 '>>> and read it, storing the contents in the variable name ''user_scripts_array''
 SET oTxtFile = (CreateObject("Scripting.FileSystemObject"))
 With oTxtFile
-	If .FileExists("H:\my favorite scripts.txt") Then
+	If .FileExists(network_location_of_favorites_text_file) Then
 		Set fav_scripts = CreateObject("Scripting.FileSystemObject")
-		Set fav_scripts_command = fav_scripts.OpenTextFile("H:\my favorite scripts.txt")
+		Set fav_scripts_command = fav_scripts.OpenTextFile(network_location_of_favorites_text_file)
 		fav_scripts_array = fav_scripts_command.ReadAll
 		IF fav_scripts_array <> "" THEN user_scripts_array = fav_scripts_array
 		fav_scripts_command.Close
@@ -243,7 +246,7 @@ NEXT
 '>>> stored at H:\my favorite scripts.txt.
 IF favorite_scripts <> "" THEN 
 	SET updated_fav_scripts_fso = CreateObject("Scripting.FileSystemObject")
-	SET updated_fav_scripts_command = updated_fav_scripts_fso.CreateTextFile("H:\my favorite scripts.txt", 2)
+	SET updated_fav_scripts_command = updated_fav_scripts_fso.CreateTextFile(network_location_of_favorites_text_file, 2)
 	updated_fav_scripts_command.Write(favorite_scripts)
 	updated_fav_scripts_command.Close
 	script_end_procedure("Success!! Your Favorites Menu has been updated.")
@@ -251,6 +254,7 @@ ELSE
 	'>>> OR...if the user has selected no scripts for their favorite, the file will be deleted to 
 	'>>> prevent the Favorites Menu from erroring out.
 	'>>> Experience with worker_signature automation tells us that if the text file is blank, the favorites menu doth not work.
-	oTxtFile.DeleteFile("H:\my favorite scripts.txt")
+	oTxtFile.DeleteFile(network_location_of_favorites_text_file)
 	script_end_procedure("You have updated your Favorites Menu, but you haven't selected any scripts. The next time you use the Favorites scripts, you will need to select your favorites.")
 END IF
+
