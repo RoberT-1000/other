@@ -233,7 +233,7 @@ DO
 LOOP UNTIL ubound(double_check_array) <= 37
 
 '>>> Getting ready to write the user's selection to a text file and save it on a prescribed location on the network.
-'>>> Building the value content of the text file.
+'>>> Building the content of the text file.
 favorite_scripts = ""
 FOR i = 0 to number_of_scripts - 1
 	IF scripts_multidimensional_array(i, 1) = 1 THEN favorite_scripts = favorite_scripts & scripts_multidimensional_array(i, 0) & "~~~"
