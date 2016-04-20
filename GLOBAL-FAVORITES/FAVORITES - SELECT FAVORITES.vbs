@@ -21,9 +21,7 @@ start_time = timer
 
 '>>> A class for each script item
 '>>> This is needed because it will enable the script to build the array of scripts.
-'>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<
-'>>> THIS SCRIPT DOES NOT LOAD FUNC LIB <<<
-'>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<
+'>>> This needs to be removed when the class is added to FuncLib
 class script
 	public script_name
 	public file_name
@@ -37,7 +35,7 @@ end class
 
 '>>> Determining the location of the user's favorites list. 
 '>>> This value should be stored in Global Variables for state-wide deployment.
-location_of_favorites_text_file = "H:\my favorite scripts.txt"
+network_location_of_favorites_text_file = "H:\my favorite scripts.txt"
 
 '>>> Telling the script main menus that we do not need to call FuncLib or build the dialogs
 run_from_favorites = TRUE
