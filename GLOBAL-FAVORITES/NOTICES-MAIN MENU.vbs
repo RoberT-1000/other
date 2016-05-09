@@ -109,6 +109,13 @@ script_array_NOTICES_main(script_num).script_name 			= "Appointment Letter"					
 script_array_NOTICES_main(script_num).file_name 			= "NOTICES - APPOINTMENT LETTER.vbs"															'Script URL
 script_array_NOTICES_main(script_num).description 			= "Sends a MEMO containing the appointment letter (with text from POLI/TEMP TE02.05.15)."
 
+script_num = script_num + 1									'Increment by one
+ReDim Preserve script_array_NOTICES_main(script_num)		'Resets the array to add one more element to it
+Set script_array_NOTICES_main(script_num) = new script		'Set this array element to be a new script. Script details below...
+script_array_NOTICES_main(script_num).script_name 			= "Eligibility Notifier"																		'Script name
+script_array_NOTICES_main(script_num).file_name 			= "NOTICES - ELIGIBILITY NOTIFIER.vbs"															'Script URL
+script_array_NOTICES_main(script_num).description 			= "Sends a MEMO informing client of possible program eligibility for SNAP, MA, MSP, MNsure or CASH."
+
 script_num = script_num + 1								'Increment by one
 ReDim Preserve script_array_NOTICES_main(script_num)		'Resets the array to add one more element to it
 Set script_array_NOTICES_main(script_num) = new script		'Set this array element to be a new script. Script details below...
@@ -129,6 +136,13 @@ Set script_array_NOTICES_main(script_num) = new script		'Set this array element 
 script_array_NOTICES_main(script_num).script_name			= "MA-EPD No Initial Premium Paid"
 script_array_NOTICES_main(script_num).file_name				= "NOTICES - MA-EPD NO INITIAL PREMIUM.vbs"
 script_array_NOTICES_main(script_num).description			= "Sends a WCOM on a denial for no initial MA-EPD premium."
+
+script_num = script_num + 1								'Increment by one
+ReDim Preserve script_array_NOTICES_main(script_num)		'Resets the array to add one more element to it
+Set script_array_NOTICES_main(script_num) = new script		'Set this array element to be a new script. Script details below...
+script_array_NOTICES_main(script_num).script_name			= "MA Inmate Application WCOM"
+script_array_NOTICES_main(script_num).file_name				= "NOTICES - MA INMATE APPLICATION WCOM.vbs"
+script_array_NOTICES_main(script_num).description			= "Sends a WCOM on a MA notice for Inmate Applications"
 
 script_num = script_num + 1								'Increment by one
 ReDim Preserve script_array_NOTICES_main(script_num)		'Resets the array to add one more element to it
