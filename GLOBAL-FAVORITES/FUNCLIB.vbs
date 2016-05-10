@@ -1,17 +1,3 @@
-'A class for each script item
-class script
-
-	public script_name
-	public file_name
-	public description
-	public button
-
-	public property get button_size	'This part determines the size of the button dynamically by determining the length of the script name, multiplying that by 3.5, rounding the decimal off, and adding 10 px
-		button_size = round ( len( script_name ) * 3.5 ) + 10
-	end property
-
-end class
-
 '---------------------------------------------------------------------------------------------------
 'HOW THIS SCRIPT WORKS:
 '
