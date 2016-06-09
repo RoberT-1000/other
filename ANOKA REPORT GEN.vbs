@@ -2,47 +2,25 @@
 name_of_script = "BULK - pull cases into Excel-revised"
 start_time = timer
 
-'LOADING FUNCTIONS LIBRARY FROM GITHUB REPOSITORY===========================================================================
-IF IsEmpty(FuncLib_URL) = TRUE THEN	'Shouldn't load FuncLib if it already loaded once
-	IF run_locally = FALSE or run_locally = "" THEN		'If the scripts are set to run locally, it skips this and uses an FSO below.
-		FuncLib_URL = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/master/MASTER%20FUNCTIONS%20LIBRARY.vbs"
-		SET req = CreateObject("Msxml2.XMLHttp.6.0")				'Creates an object to get a FuncLib_URL
-		req.open "GET", FuncLib_URL, FALSE							'Attempts to open the FuncLib_URL
-		req.send													'Sends request
-		IF req.Status = 200 THEN									'200 means great success
-			Set fso = CreateObject("Scripting.FileSystemObject")	'Creates an FSO
-			Execute req.responseText								'Executes the script code
-		ELSE														'Error message, tells user to try to reach github.com, otherwise instructs to contact Veronica with details (and stops script).
-			MsgBox 	"Something has gone wrong. The code stored on GitHub was not able to be reached." & vbCr &_ 
-					vbCr & _
-					"Before contacting Veronica Cary, please check to make sure you can load the main page at www.GitHub.com." & vbCr &_
-					vbCr & _
-					"If you can reach GitHub.com, but this script still does not work, ask an alpha user to contact Veronica Cary and provide the following information:" & vbCr &_
-					vbTab & "- The name of the script you are running." & vbCr &_
-					vbTab & "- Whether or not the script is ""erroring out"" for any other users." & vbCr &_
-					vbTab & "- The name and email for an employee from your IT department," & vbCr & _
-					vbTab & vbTab & "responsible for network issues." & vbCr &_
-					vbTab & "- The URL indicated below (a screenshot should suffice)." & vbCr &_
-					vbCr & _
-					"Veronica will work with your IT department to try and solve this issue, if needed." & vbCr &_ 
-					vbCr &_
-					"URL: " & FuncLib_URL
-					script_end_procedure("Script ended due to error connecting to GitHub.")
-		END IF
-	ELSE
-		FuncLib_URL = "C:\BZS-FuncLib\MASTER FUNCTIONS LIBRARY.vbs"
-		Set run_another_script_fso = CreateObject("Scripting.FileSystemObject")
-		Set fso_command = run_another_script_fso.OpenTextFile(FuncLib_URL)
-		text_from_the_other_script = fso_command.ReadAll
-		fso_command.Close
-		Execute text_from_the_other_script
-	END IF
-END IF
+'COMMENT (05/10/2016) >> 	Robert removed the GitHub FuncLib call and replaced it with a call to a static copy effective 05/10/2016 @ 4:21 PM. Concerned that 
+'							additional custom functions would be killed off, potentially creating problems for THIS report generator, the list of all functions was moved to the 
+'							County's network. To provide a simple way of tracking this, a static funclib constant is added below.
+
+'Static FuncLib as of 05/10/2016
+current_static_funclib_location = "Q:\Blue Zone Scripts\Public Assistance Script Files\Script Files\County Customized\FUNCTIONS - FUNCTIONS LIBRARY 2016-05-10.vbs"
+
+'Loading the static functions library...
+Set run_another_script_fso = CreateObject("Scripting.FileSystemObject")
+Set fso_command = run_another_script_fso.OpenTextFile(current_static_funclib_location)
+text_from_the_other_script = fso_command.ReadAll
+fso_command.Close
+Execute text_from_the_other_script
+
 
 '----------FUNCTIONS----------
 FUNCTION check_panels_function(x, panel_status)
 	FOR EACH hh_person IN x
-		CALL navigate_to_screen("STAT", "HEST")
+		CALL navigate_to_MAXIS_screen("STAT", "HEST")
 		errr_screen_check
 			IF hh_person <> "01" THEN
 				EMWriteScreen hh_person, 20, 76
@@ -104,7 +82,7 @@ FUNCTION check_panels_function(x, panel_status)
 								END IF
 								IF (unea_info <> "0" AND unea_end_date = "__ __ __") THEN panel_status = "UNEA"
 								IF (unea_info <> "0" AND valid_command = "ENTER A VALID COMMAND") OR unea_info = "0" THEN
-									CALL navigate_to_screen("STAT", "JOBS")
+									CALL navigate_to_MAXIS_screen("STAT", "JOBS")
 									IF hh_person <> "01" THEN
 										EMWriteScreen hh_person, 20, 76
 										transmit
@@ -161,7 +139,7 @@ FUNCTION check_panels_for_income(pers_array, panel_status)
 				IF (unea_info <> "0" AND unea_end_date = "__ __ __") THEN panel_status = "UNEA"
 				IF (unea_info <> "0" AND valid_command = "ENTER A VALID COMMAND") OR unea_info = "0" THEN
 					'Checking JOBS
-					CALL navigate_to_screen("STAT", "JOBS")
+					CALL navigate_to_MAXIS_screen("STAT", "JOBS")
 					IF hh_person <> "01" THEN
 						EMWriteScreen hh_person, 20, 76
 						transmit
@@ -207,7 +185,7 @@ FUNCTION check_panels_for_hc_function(x, panel_status)
 				IF (unea_info <> "0" AND unea_end_date = "__ __ __") THEN panel_status = "UNEA"
 				IF (unea_info <> "0" AND valid_command = "ENTER A VALID COMMAND") OR unea_info = "0" THEN
 			' >>>>> JOBS <<<<<		
-					CALL navigate_to_screen("STAT", "JOBS")
+					CALL navigate_to_MAXIS_screen("STAT", "JOBS")
 					IF hh_person <> "01" THEN
 						EMWriteScreen hh_person, 20, 76
 						transmit
@@ -524,33 +502,36 @@ FUNCTION navigate_to_MAXIS(maxis_mode)
 END FUNCTION
 
 'DIALOGS----------------------------------------------------------------------------------------------------
-BeginDialog pull_cases_into_excel_dialog, 0, 0, 416, 250, "Pull cases into Excel dialog"
-  CheckBox 10, 20, 55, 10, "PREG exists?", preg_check
-  CheckBox 10, 35, 90, 10, "All HH membs 19+?", all_HH_membs_19_plus_check
-  CheckBox 10, 50, 90, 10, "Number of HH membs?", number_of_HH_membs_check
-  CheckBox 10, 65, 90, 10, "ABAWD code", ABAWD_code_check
-  CheckBox 10, 80, 80, 10, "PDED/Rep-Payee", pded_check
-  CheckBox 10, 95, 95, 10, "MAGI Non-MAGI", magi_pct_check
-  CheckBox 10, 110, 85, 10, "FS and MFIP Review", FS_MF_review_check
-  CheckBox 10, 125, 85, 10, "HC Review", HC_REVIEW_check
-  CheckBox 10, 140, 85, 10, "GA, MSA Review", ga_msa_check
-  CheckBox 10, 155, 95, 10, "Homeless Clients", homeless_check
-  CheckBox 10, 170, 105, 10, "MAEPD/Part B Reimbursable", maepd_check
-  CheckBox 10, 185, 90, 10, "Citizen/Alien ID", imig_ctzn_check
-  CheckBox 10, 200, 90, 10, "LEP TANF Months", lep_tanf_check
-  CheckBox 10, 215, 70, 10, "All cases", all_cases_check
-  CheckBox 10, 230, 105, 10, "Banked Months Finder", banked_month_check
-  DropListBox 180, 15, 95, 10, "REPT/ACTV"+chr(9)+"REPT/PND2", screen_to_use
-  EditBox 190, 30, 90, 15, x_number
-  CheckBox 125, 50, 295, 15, "Check here if you're running this for all staff (WARNING: this could take several hours)", all_workers_check
+BeginDialog pull_cases_into_excel_dialog, 0, 0, 341, 195, "Anoka Report Generator"
+  DropListBox 65, 10, 95, 10, "REPT/ACTV"+chr(9)+"REPT/PND2", screen_to_use
+  EditBox 75, 25, 90, 15, x_number
+  CheckBox 10, 45, 295, 10, "Check here if you're running this for all staff (WARNING: this could take several hours)", all_workers_check
+  CheckBox 10, 60, 305, 10, "Check here to add the supervisor's name to the report.", supervisor_check
+  CheckBox 10, 95, 55, 10, "PREG exists?", preg_check
+  CheckBox 115, 95, 90, 10, "All HH membs 19+?", all_HH_membs_19_plus_check
+  CheckBox 235, 95, 90, 10, "Number of HH membs?", number_of_HH_membs_check
+  CheckBox 10, 110, 90, 10, "ABAWD code", ABAWD_code_check
+  CheckBox 115, 110, 80, 10, "PDED/Rep-Payee", pded_check
+  CheckBox 235, 110, 95, 10, "MAGI Non-MAGI", magi_pct_check
+  CheckBox 10, 125, 85, 10, "FS and MFIP Review", FS_MF_review_check
+  CheckBox 115, 125, 85, 10, "HC Review", HC_REVIEW_check
+  CheckBox 235, 125, 85, 10, "GA, MSA Review", ga_msa_check
+  CheckBox 10, 140, 95, 10, "Homeless Clients", homeless_check
+  CheckBox 115, 140, 105, 10, "MAEPD/Part B Reimbursable", maepd_check
+  CheckBox 235, 140, 70, 10, "MAEPD Finder", maepd_finder_check
+  CheckBox 10, 155, 90, 10, "Citizen/Alien ID", imig_ctzn_check
+  CheckBox 115, 155, 90, 10, "LEP TANF Months", lep_tanf_check
+  CheckBox 235, 155, 85, 10, "Banked Months Finder", banked_month_check
+  CheckBox 10, 170, 70, 10, "All cases", all_cases_check
+  CheckBox 115, 170, 95, 10, "HC Renewal Dates", hc_renewal_dates_button
+  CheckBox 235, 170, 85, 10, "All progs REVW Dates", all_prog_review_dates_check
   ButtonGroup ButtonPressed
-    OkButton 365, 10, 50, 15
-    CancelButton 365, 30, 50, 15
-  GroupBox 5, 5, 115, 240, "Additional items to log"
-  Text 125, 15, 50, 10, "Screen to use:"
-  Text 125, 35, 60, 10, "Worker to check:"
+    OkButton 235, 10, 50, 15
+    CancelButton 285, 10, 50, 15
+  GroupBox 5, 80, 325, 105, "Additional items to log"
+  Text 10, 10, 50, 10, "Screen to use:"
+  Text 10, 30, 60, 10, "Worker to check:"
 EndDialog
-
 
 BeginDialog gen_worker_dialog, 0, 0, 291, 130, "Pull cases into Excel dialog"
   CheckBox 10, 20, 55, 10, "PREG exists?", preg_check
@@ -719,6 +700,9 @@ IF magi_pct_check = 1 THEN
 	objExcel.Cells(1, col_to_use).Value = "MAGI Review aligned?"
 	reviews_aligned_col = col_to_use
 	col_to_use = col_to_use + 1
+	objExcel.Cells(1, col_to_use).Value = "HC ER MONTH"
+	hc_er_month_col = col_to_use
+	col_to_use = col_to_use + 1
 END IF
 IF FS_MF_review_check = 1 THEN
 	ObjExcel.Cells(1, col_to_use).Value = "SNAP Cases to Review"
@@ -746,6 +730,11 @@ IF maepd_check = 1 THEN
 	maepd_col = col_to_use
 	col_to_use = col_to_use + 1
 END IF
+IF maepd_finder_check = 1 THEN 
+	objExcel.Cells(1, col_to_use).Value = "MA-EPD Members"
+	maepd_found_col = col_to_use
+	col_to_use = col_to_use + 1
+END IF
 IF all_cases_check = 1 THEN
 	screen_to_use = "REPT/ACTV"
 	all_workers_check = 1
@@ -768,6 +757,23 @@ IF banked_month_check = 1 THEN
 	banked_col = col_to_use
 	col_to_use = col_to_use + 1
 END IF
+IF hc_renewal_dates_button = 1 THEN 
+	objExcel.Cells(1, col_to_use).Value = "HC ER Date"
+	hc_er_month_col = col_to_use
+	col_to_use = col_to_use + 1
+END IF
+IF all_prog_review_dates_check = 1 THEN 
+	objExcel.Cells(1, col_to_use).Value = "CASH REVW Date"
+	cash_revw_col = col_to_use
+	col_to_use = col_to_use + 1
+	objExcel.Cells(1, col_to_use).Value = "SNAP REVW Date"
+	snap_revw_col = col_to_use
+	col_to_use = col_to_use + 1	
+	objExcel.Cells(1, col_to_use).Value = "HC REVW Date"
+	hc_revw_col = col_to_use
+	col_to_use = col_to_use + 1	
+END IF
+
 
 'Setting the variable for what's to come
 excel_row = 2
@@ -787,7 +793,8 @@ End if
 For each worker in x_array
 'Getting to PND2, if PND2 is the selected option
 If screen_to_use = "REPT/PND2" then
-	Call navigate_to_screen("rept", "pnd2")
+	Call navigate_to_MAXIS_screen("rept", "pnd2")
+	IF len(worker) = 3 THEN worker = worker_county_code & worker
 	EMWriteScreen worker, 21, 13
 	transmit
 
@@ -795,8 +802,8 @@ If screen_to_use = "REPT/PND2" then
 	Do
 		MAXIS_row = 7
 		Do
-			EMReadScreen case_number, 8, MAXIS_row, 5
-			If case_number = "        " then 
+			EMReadScreen MAXIS_case_number, 8, MAXIS_row, 5
+			If MAXIS_case_number = "        " then 
 				EMReadScreen additional_app, 14, maxis_row, 17
 				IF additional_app = "              " THEN
 					EXIT DO
@@ -807,7 +814,7 @@ If screen_to_use = "REPT/PND2" then
 				EMReadScreen client_name, 22, MAXIS_row, 16
 				EMReadScreen APPL_date, 8, MAXIS_row, 38
 				ObjExcel.Cells(excel_row, 1).Value = worker
-				ObjExcel.Cells(excel_row, 2).Value = case_number
+				ObjExcel.Cells(excel_row, 2).Value = MAXIS_case_number
 				ObjExcel.Cells(excel_row, 3).Value = client_name
 				ObjExcel.Cells(excel_row, 4).Value = replace(APPL_date, " ", "/")
 				MAXIS_row = MAXIS_row + 1
@@ -821,13 +828,10 @@ End if
 
 'Getting to ACTV, if ACTV is the selected option
 If screen_to_use = "REPT/ACTV" then
-	Call navigate_to_screen("rept", "actv")
+	Call navigate_to_MAXIS_screen("rept", "actv")
 	IF worker <> "" THEN
-		IF len(worker) = 3 THEN 
-			EMWriteScreen worker, 21, 17
-		ELSE
-			EMWriteScreen worker, 21, 13
-		END IF
+		IF len(worker) = 3 THEN worker = worker_county_code & worker
+		EMWriteScreen worker, 21, 13
 		transmit
 	END IF
 	EMReadScreen user_id, 7, 21, 71
@@ -839,12 +843,12 @@ If screen_to_use = "REPT/ACTV" then
 		MAXIS_row = 7
 		EMReadScreen last_page_check, 21, 24, 2
 		Do
-			EMReadScreen case_number, 8, MAXIS_row, 12
-			If case_number = "        " then exit do
+			EMReadScreen MAXIS_case_number, 8, MAXIS_row, 12
+			If MAXIS_case_number = "        " then exit do
 			EMReadScreen client_name, 21, MAXIS_row, 21
 			EMReadScreen next_REVW_date, 8, MAXIS_row, 42
 			ObjExcel.Cells(excel_row, 1).Value = worker
-			ObjExcel.Cells(excel_row, 2).Value = case_number
+			ObjExcel.Cells(excel_row, 2).Value = MAXIS_case_number
 			ObjExcel.Cells(excel_row, 3).Value = client_name
 			ObjExcel.Cells(excel_row, 4).Value = replace(next_REVW_date, " ", "/")
 			MAXIS_row = MAXIS_row + 1
@@ -860,12 +864,12 @@ next
 excel_row = 2 
 
 Do 
-	case_number = ObjExcel.Cells(excel_row, 2).Value
-	If case_number = "" then exit do
+	MAXIS_case_number = ObjExcel.Cells(excel_row, 2).Value
+	If MAXIS_case_number = "" then exit do
 
 	'Now pulling PREG info
 	If preg_check = 1 then
-		call navigate_to_screen("STAT", "PREG")
+		call navigate_to_MAXIS_screen("STAT", "PREG")
 		EMReadScreen PREG_panel_check, 1, 2, 78
 		If PREG_panel_check <> "0" then 
 			ObjExcel.Cells(excel_row, preg_col).Value = "Y"
@@ -943,7 +947,7 @@ Do
 	
 	'Now pulling age info
 	If all_HH_membs_19_plus_check = 1 then
-		call navigate_to_screen("STAT", "MEMB")
+		call navigate_to_MAXIS_screen("STAT", "MEMB")
 		Do
 			EMReadScreen MEMB_panel_current, 1, 2, 73
 			EMReadScreen MEMB_panel_total, 1, 2, 78
@@ -962,7 +966,7 @@ Do
 
 	'Now pulling number of membs info
 	If number_of_HH_membs_check = 1 then
-		call navigate_to_screen("STAT", "MEMB")
+		call navigate_to_MAXIS_screen("STAT", "MEMB")
 		EMReadScreen MEMB_panel_total, 1, 2, 78
 		ObjExcel.Cells(excel_row, number_of_HH_membs_col).Value = cint(MEMB_panel_total)
 	End if
@@ -973,12 +977,12 @@ Do
 		eats_group_members = ""		'clearing
 		eats_row = 13			'clearing variable
 
-		call navigate_to_screen("STAT", "PROG")
+		call navigate_to_MAXIS_screen("STAT", "PROG")
 		ERRR_screen_check
 		
 		EMReadScreen snap_status, 4, 10, 74
 		IF snap_status = "ACTV" OR snap_status = "PEND" THEN
-			call navigate_to_screen("STAT", "EATS")
+			call navigate_to_MAXIS_screen("STAT", "EATS")
 			ERRR_screen_check
 			EMReadScreen all_eat_together, 1, 4, 72
 			IF all_eat_together = "_" THEN
@@ -1018,7 +1022,7 @@ Do
 				eats_group_members = trim(eats_group_members)
 				eats_group_members = split(eats_group_members)
 	
-				call navigate_to_screen("STAT", "WREG")
+				call navigate_to_MAXIS_screen("STAT", "WREG")
 				ERRR_screen_check
 		
 				FOR EACH person IN eats_group_members
@@ -1043,7 +1047,7 @@ Do
 	IF pded_check = 1 THEN
 		total_pded = ""
 		pded_hh_array = ""
-		call navigate_to_screen("STAT", "PDED")
+		call navigate_to_MAXIS_screen("STAT", "PDED")
 			errr_screen_check
 			pded_row = 5
 			DO
@@ -1087,7 +1091,7 @@ Do
 		'Finds HC Budget Method
 		MAGI_count = 0
 		nonMAGI_count = 0
-		call navigate_to_screen("ELIG", "HC")
+		call navigate_to_MAXIS_screen("ELIG", "HC")
 		hhmm_row = 8
 		DO
 			EMReadScreen hc_ref_num, 2, hhmm_row, 3
@@ -1174,26 +1178,32 @@ Do
 			Call navigate_to_MAXIS_screen("STAT", "PROG")
 			EMReadScreen MAGI_HC_status, 4, 12, 74
 			IF MAGI_HC_status = "ACTV" Then
-				CALL navigate_to_MAXIS_screen("STAT", "REVW")
-				EMwritescreen "X", 5, 71
-				Transmit
-				'Checking to make sure pop up opened
-				DO
-					EMReadScreen revw_pop_up_check, 8, 4, 44
-					EMWaitReady 1, 1
-				LOOP until revw_pop_up_check = "RENEWALS"
-				'Reading HC reviews to compare them
-				EMReadScreen hc_income_renewal, 8, 8, 27
-				EMReadScreen hc_IA_renewal, 8, 8, 71
-				EMReadScreen hc_annual_renewal, 8, 9, 27
-				IF hc_income_renewal = "__ 01 __" THEN hc_compare_renewal = hc_IA_renewal
-				IF hc_IA_renewal = "__ 01 __" THEN hc_compare_renewal = hc_income_renewal
-'								If case_number = 302735 THEN msgbox "hc income " & hc_income_renewal & " hc asset " & hc_IA_renewal & " hc annual " & hc_annual_renewal & " compare " & hc_compare_renewal
-        
-				IF hc_annual_renewal = hc_compare_renewal THEN
-					objExcel.Cells(excel_row, reviews_aligned_col).Value = "Y"
-				ELSE
-					objExcel.Cells(excel_row, reviews_aligned_col).Value = "Y"
+				write_value_and_transmit "REVW", 20, 71
+				EMReadScreen revw_does_not_exist, 19, 24, 2
+				IF revw_does_not_exist <> "REVW DOES NOT EXIST" THEN 
+					EMwritescreen "X", 5, 71
+					Transmit
+					'Checking to make sure pop up opened
+					DO
+						EMReadScreen revw_pop_up_check, 8, 4, 44
+						EMWaitReady 1, 1
+					LOOP until revw_pop_up_check = "RENEWALS"
+					'Reading HC reviews to compare them
+					EMReadScreen hc_income_renewal, 8, 8, 27
+					EMReadScreen hc_IA_renewal, 8, 8, 71
+					EMReadScreen hc_annual_renewal, 8, 9, 27
+					objExcel.Cells(excel_row, 4).Value = replace(hc_annual_renewal, " ", "/")
+					IF MAGI_count <> 0 THEN 
+						IF hc_income_renewal = "__ 01 __" THEN hc_compare_renewal = hc_IA_renewal
+						IF hc_IA_renewal = "__ 01 __" THEN hc_compare_renewal = hc_income_renewal
+	'									If MAXIS_case_number = 302735 THEN msgbox "hc income " & hc_income_renewal & " hc asset " & hc_IA_renewal & " hc annual " & hc_annual_renewal & " compare " & hc_compare_renewal
+				
+						IF hc_annual_renewal = hc_compare_renewal THEN
+							objExcel.Cells(excel_row, reviews_aligned_col).Value = "Y"
+						ELSE
+							objExcel.Cells(excel_row, reviews_aligned_col).Value = "Y"
+						END IF
+					END IF
 				END IF
 			END IF
 		END IF
@@ -1208,6 +1218,65 @@ Do
 			SET objRange = objExcel.Cells(excel_row, 1).EntireRow
 			objRange.Delete
 			excel_row = excel_row - 1
+		END IF
+	END IF 
+	
+	IF hc_renewal_dates_button = 1 THEN 
+			Call navigate_to_MAXIS_screen("STAT", "PROG")
+			EMReadScreen MAGI_HC_status, 4, 12, 74
+			IF MAGI_HC_status = "ACTV" Then
+				write_value_and_transmit "REVW", 20, 71
+				EMReadScreen revw_does_not_exist, 19, 24, 2
+				IF revw_does_not_exist <> "REVW DOES NOT EXIST" THEN 
+					EMwritescreen "X", 5, 71
+					Transmit
+					'Checking to make sure pop up opened
+					DO
+						EMReadScreen revw_pop_up_check, 8, 4, 44
+						EMWaitReady 1, 1
+					LOOP until revw_pop_up_check = "RENEWALS"
+					'Reading HC reviews to compare them
+					EMReadScreen hc_income_renewal, 8, 8, 27
+					EMReadScreen hc_IA_renewal, 8, 8, 71
+					EMReadScreen hc_annual_renewal, 8, 9, 27
+					objExcel.Cells(excel_row, hc_er_month_col).Value = replace(hc_annual_renewal, " ", "/")	
+				END IF
+			ELSE
+				SET objRange = objExcel.Cells(excel_row, 1).EntireRow
+				objRange.Delete
+				excel_row = excel_row - 1
+			END IF
+	END IF
+	
+	IF all_prog_review_dates_check = 1 THEN 
+		CALL navigate_to_MAXIS_screen("STAT", "PROG")
+		EMReadScreen cash_one_status, 4, 6, 74
+		EMReadScreen cash_two_status, 4, 7, 74
+		EMReadScreen grh_status, 4, 9, 74
+		EMReadScreen snap_status, 4, 10, 74
+		EMReadScreen hc_status, 4, 12, 74
+		CALL navigate_to_MAXIS_screen("STAT", "REVW")
+		'Grabbing CASH if active
+		IF cash_one_status = "ACTV" OR cash_two_status = "ACTV" OR grh_status = "ACTV" THEN 
+			EMReadScreen cash_revw_date, 8, 9, 37
+			'IF cash_revw_date = "__ 01 __" THEN cash_revw_date = ""
+			objExcel.Cells(excel_row, cash_revw_col).Value = replace(cash_revw_date, " 01 ", "/01/")
+		END IF
+		'Grabbing SNAP if active
+		IF snap_status = "ACTV" THEN 
+			CALL write_value_and_transmit("X", 5, 58)
+			EMReadScreen snap_revw_date, 8, 9, 64
+			'IF snap_revw_date = "__ 01 __" THEN snap_revw_date = ""
+			objExcel.Cells(excel_row, snap_revw_col).Value = replace(snap_revw_date, " 01 ", "/01/")
+			transmit
+		END IF
+		'Grabbing HC if active
+		IF hc_status = "ACTV" THEN 
+			CALL write_value_and_transmit("X", 5, 71)
+			EMReadScreen hc_revw_date, 8, 9, 27
+			IF hc_revw_date = "__ 01 __" THEN hc_revw_date = ""
+			objExcel.Cells(excel_row, hc_revw_col).Value = replace(hc_revw_date, " 01 ", "/01/")
+			transmit
 		END IF
 	END IF 
 
@@ -1226,7 +1295,7 @@ Do
 		msa_status = ""
 		ga_check_array = ""
 		
-		CALL navigate_to_screen("STAT", "PROG")
+		CALL navigate_to_MAXIS_screen("STAT", "PROG")
 		ERRR_screen_check
 		hc_actv_missing_revw = ""
 		
@@ -1241,7 +1310,7 @@ Do
 			(HC_REVIEW_check = 1 AND hc_status = "ACTV") OR _ 
 			(ga_msa_check = 1 AND (((CASH_prog_1 = "GA" OR CASH_prog_1 = "MS") AND CASH_status_1 = "ACTV") OR ((CASH_prog_2 = "GA" OR CASH_prog_2 = "MS") AND CASH_status_2 = "ACTV"))) THEN
 
-			CALL navigate_to_screen("STAT", "REVW")
+			CALL navigate_to_MAXIS_screen("STAT", "REVW")
 			ERRR_screen_check			
 			IF FS_MF_review_check = 1 THEN 
 				EmReadScreen cash_review_date, 8, 9, 37   'reads cash renewal date
@@ -1295,7 +1364,7 @@ Do
 					' >>>>>>>>		ACCT	SECU	OTHR	CASH
 					' >>>>>>>>		CARS	REST	SPON(?)
 
-					CALL navigate_to_screen("ELIG", "HC")
+					CALL navigate_to_MAXIS_screen("ELIG", "HC")
 					HHMM_row = 8
 					hc_group = ""
 					DO		
@@ -1349,7 +1418,7 @@ Do
 					cdate(snap_review_date) = cdate(review_date_2_year_current) OR _
 					cdate(snap_review_date) = cdate(review_date_2_year_future)) THEN
 	
-					call navigate_to_screen("STAT", "EATS")
+					call navigate_to_MAXIS_screen("STAT", "EATS")
 					EMReadScreen all_eat_together, 1, 4, 72
 					IF all_eat_together = "_" THEN
 						eats_group_members = "01" & " "
@@ -1400,7 +1469,7 @@ Do
 										
 					panel_status = ""
 				
-					CALL navigate_to_screen("ELIG", "MFIP")
+					CALL navigate_to_MAXIS_screen("ELIG", "MFIP")
 					mfpr_row = 7
 					DO
 						IF mfpr_row = 18 THEN 
@@ -1523,7 +1592,7 @@ Do
 	END IF
 
 	IF homeless_check = 1 THEN
-		CALL navigate_to_screen("STAT", "ADDR")
+		CALL navigate_to_MAXIS_screen("STAT", "ADDR")
 		ERRR_screen_check
 		EMReadScreen addr_line, 16, 6, 43
 		EMReadScreen homeless_yn, 1, 10, 43
@@ -1536,10 +1605,10 @@ Do
 		END IF			
 	END IF
 
-	IF MAEPD_check = 1 THEN
+	IF MAEPD_check = 1 OR maepd_finder_check = 1 THEN
 		back_to_SELF
 		CALL find_variable("Environment: ", production_or_inquiry, 10)
-		CALL navigate_to_screen("ELIG", "HC")
+		CALL navigate_to_MAXIS_screen("ELIG", "HC")
 		hhmm_row = 8
 		DO
 			EMReadScreen hc_type, 2, hhmm_row, 28
@@ -1547,7 +1616,13 @@ Do
 				EMWriteScreen "X", hhmm_row, 26
 				transmit
 				EMReadScreen elig_type, 2, 12, 72
-				IF elig_type = "DP" THEN
+				IF elig_type = "DP" AND maepd_finder_check = 1 AND maepd_check = 0 THEN 
+					EMReadScreen ref_num_and_name, 40, 5, 16
+					ref_num_and_name = trim(ref_num_and_name)
+					ref_num_and_name = replace(ref_num_and_name, "  ", ": ")
+					objExcel.Cells(excel_row, maepd_found_col).Value = objExcel.Cells(excel_row, maepd_found_col).Value & ref_num_and_name & "; "
+				END IF
+				IF elig_type = "DP" AND maepd_check = 1 AND maepd_finder_check = 0 THEN
 					EMWriteScreen "X", 9, 76
 					transmit
 					EMReadScreen pct_fpg, 4, 18, 38
@@ -1557,7 +1632,7 @@ Do
 						PF3
 						PF3
 						EMReadScreen hh_memb_num, 2, hhmm_row, 3
-						CALL navigate_to_screen("STAT", "MEMB")
+						CALL navigate_to_MAXIS_screen("STAT", "MEMB")
 						ERRR_screen_check
 						EMWriteScreen hh_memb_num, 20, 76
 						transmit
@@ -1625,7 +1700,7 @@ Do
 						END IF
 						CALL navigate_to_MAXIS(production_or_inquiry)
 						hhmm_row = hhmm_row + 1
-						CALL navigate_to_screen("ELIG", "HC")
+						CALL navigate_to_MAXIS_screen("ELIG", "HC")
 					ELSE
 						DO
 							EMReadScreen at_hhmm, 4, 3, 51
@@ -1646,11 +1721,13 @@ Do
 			END IF
 		LOOP UNTIL hc_type = "  " OR this_is_the_last_page = "THIS IS THE LAST PAGE"
 		'Deleting the blank results to clean up the spreadsheet
-		IF objExcel.Cells(excel_row, maepd_col).Value = "" THEN
-			SET objRange = objExcel.Cells(excel_row, 1).EntireRow
-			objRange.Delete
-			excel_row = excel_row - 1
-		END IF				
+		'IF maepd_check = 1 THEN 
+		'	IF objExcel.Cells(excel_row, maepd_col).Value = "" THEN
+		'		SET objRange = objExcel.Cells(excel_row, 1).EntireRow
+		'		objRange.Delete
+		'		excel_row = excel_row - 1
+		'	END IF				
+		'END IF
 	END IF
 	
 	IF banked_month_check = 1 THEN 
@@ -1677,7 +1754,7 @@ Do
 	END IF
 
 	excel_row = excel_row + 1
-Loop until case_number = ""
+Loop until MAXIS_case_number = ""
 
 IF ga_msa_check = 1 THEN 
 	objExcel.Cells(1, col_to_use + 1).Value = "GA cases highlighted YELLOW indicate GA case with active income panel."
@@ -1689,42 +1766,40 @@ FOR i = 1 TO col_to_use
 	objExcel.Columns(i).AutoFit()
 NEXT
 
-'IF imig_ctzn_check = 1 THEN 
-'	excel_row = 2
-'	DO
-'		back_to_SELF
-'		case_number = objExcel.Cells(excel_row, 2).Value
-'		IF objExcel.Cells(excel_row, interp_col).Value = "N" AND objExcel.Cells(excel_row, alien_id_col).Value <> "" THEN 
-'			membs_group = objExcel.Cells(excel_row, alien_id_col).Value
-'			membs_group = split(membs_group, ";")
-'			actv_group = ""
-'			
-'			FOR EACH person IN membs_group
-'				IF person <> "" THEN 
-'					CALL navigate_to_MAXIS_screen("CASE", "PERS")
-'					pers_row = 9
-'					DO
-'						EMReadScreen pers_pers, 2, pers_row, 3
-'						IF pers_pers = person THEN 
-'							EMReadScreen active_progs, 34, pers_row, 46
-'							IF InStr(active_progs, "A") <> 0 THEN actv_group = actv_group & person & ";"
-'						ELSE
-'							pers_row = pers_row + 1
-'							IF pers_row = 18 THEN 
-'								PF8
-'								pers_row = 9
-'								EMReadScreen last_page, 21, 24, 2
-'								IF last_page = "THIS IS THE LAST PAGE" THEN EXIT DO
-'							END IF
-'						END IF
-'					LOOP UNTIL last_page = "THIS IS THE LAST PAGE" OR pers_pers = person
-'				END IF
-'			NEXT
-'			objExcel.Cells(excel_row, alien_id_col).Value = actv_group
-'		END IF
-'		excel_row = excel_row + 1
-'	LOOP UNTIL objExcel.Cells(excel_row, 2).Value = ""
-'END IF
+IF supervisor_check = 1 THEN 
+	'Adding a column to the left of the data
+	SET objSheet = objWorkbook.Sheets("Sheet1")
+	objSheet.Columns("A:A").Insert -4161
+	objExcel.Cells(1, 1).Value = "SUPERVISOR NAME"
+	
+	'Going to REPT/USER
+	CALL navigate_to_MAXIS_screen("REPT", "USER")
+	
+	'Starting back at the top of the page
+	excel_row = 2
+	DO
+		worker_id = objExcel.Cells(excel_row, 2).Value
+		prev_worker_id = objExcel.Cells(excel_row - 1, 2).Value
+		IF worker_id <> prev_worker_id THEN 
+			'Entering the worker number into REPT/USER
+			CALL write_value_and_transmit(worker_id, 21, 12)
+			CALL write_value_and_transmit("X", 7, 3)
+			'Grabbing the supervisor X1 number
+			EMReadScreen supervisor_id, 7, 14, 61
+			transmit
+			CALL write_value_and_transmit(supervisor_id, 21, 12)
+			EMReadScreen supervisor_name, 18, 7, 14
+			supervisor_name = trim(supervisor_name)
+			objExcel.Cells(excel_row, 1).Value = supervisor_name
+		ELSE
+			'Adding the supervisor name from the previous row if the X1 number on this row matches the X1 number on the previous row
+			objExcel.Cells(excel_row, 1).Value = objExcel.Cells(excel_row - 1, 1).Value
+		END IF
+		excel_row = excel_row + 1
+	LOOP UNTIL objExcel.Cells(excel_row, 2).Value = ""
+	
+	objExcel.Columns(1).AutoFit()
+END IF
 
 'Logging usage stats
 script_end_procedure("DONE!!")
