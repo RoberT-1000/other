@@ -2,14 +2,13 @@
 name_of_script = "DAIL - IEVS SCRUBBER.vbs"
 start_time = timer
 
+
 'LOADING FUNCTIONS LIBRARY FROM GITHUB REPOSITORY===========================================================================
 IF IsEmpty(FuncLib_URL) = TRUE THEN	'Shouldn't load FuncLib if it already loaded once
-	IF run_locally = FALSE or run_locally = "" THEN		'If the scripts are set to run locally, it skips this and uses an FSO below.
-		IF default_directory = "C:\DHS-MAXIS-Scripts\Script Files\" THEN			'If the default_directory is C:\DHS-MAXIS-Scripts\Script Files, you're probably a scriptwriter and should use the master branch.
+	IF run_locally = FALSE or run_locally = "" THEN	   'If the scripts are set to run locally, it skips this and uses an FSO below.
+		IF use_master_branch = TRUE THEN			   'If the default_directory is C:\DHS-MAXIS-Scripts\Script Files, you're probably a scriptwriter and should use the master branch.
 			FuncLib_URL = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/master/MASTER%20FUNCTIONS%20LIBRARY.vbs"
-		ELSEIF beta_agency = "" or beta_agency = True then							'If you're a beta agency, you should probably use the beta branch.
-			FuncLib_URL = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/BETA/MASTER%20FUNCTIONS%20LIBRARY.vbs"
-		Else																		'Everyone else should use the release branch.
+		Else											'Everyone else should use the release branch.
 			FuncLib_URL = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/RELEASE/MASTER%20FUNCTIONS%20LIBRARY.vbs"
 		End if
 		SET req = CreateObject("Msxml2.XMLHttp.6.0")				'Creates an object to get a FuncLib_URL
@@ -18,22 +17,12 @@ IF IsEmpty(FuncLib_URL) = TRUE THEN	'Shouldn't load FuncLib if it already loaded
 		IF req.Status = 200 THEN									'200 means great success
 			Set fso = CreateObject("Scripting.FileSystemObject")	'Creates an FSO
 			Execute req.responseText								'Executes the script code
-		ELSE														'Error message, tells user to try to reach github.com, otherwise instructs to contact Veronica with details (and stops script).
-			MsgBox 	"Something has gone wrong. The code stored on GitHub was not able to be reached." & vbCr &_ 
-					vbCr & _
-					"Before contacting Veronica Cary, please check to make sure you can load the main page at www.GitHub.com." & vbCr &_
-					vbCr & _
-					"If you can reach GitHub.com, but this script still does not work, ask an alpha user to contact Veronica Cary and provide the following information:" & vbCr &_
-					vbTab & "- The name of the script you are running." & vbCr &_
-					vbTab & "- Whether or not the script is ""erroring out"" for any other users." & vbCr &_
-					vbTab & "- The name and email for an employee from your IT department," & vbCr & _
-					vbTab & vbTab & "responsible for network issues." & vbCr &_
-					vbTab & "- The URL indicated below (a screenshot should suffice)." & vbCr &_
-					vbCr & _
-					"Veronica will work with your IT department to try and solve this issue, if needed." & vbCr &_ 
-					vbCr &_
-					"URL: " & FuncLib_URL
-					script_end_procedure("Script ended due to error connecting to GitHub.")
+		ELSE														'Error message
+			critical_error_msgbox = MsgBox ("Something has gone wrong. The Functions Library code stored on GitHub was not able to be reached." & vbNewLine & vbNewLine &_
+                                            "FuncLib URL: " & FuncLib_URL & vbNewLine & vbNewLine &_
+                                            "The script has stopped. Please check your Internet connection. Consult a scripts administrator with any questions.", _
+                                            vbOKonly + vbCritical, "BlueZone Scripts Critical Error")
+            StopScript
 		END IF
 	ELSE
 		FuncLib_URL = "C:\BZS-FuncLib\MASTER FUNCTIONS LIBRARY.vbs"
@@ -46,7 +35,8 @@ IF IsEmpty(FuncLib_URL) = TRUE THEN	'Shouldn't load FuncLib if it already loaded
 END IF
 'END FUNCTIONS LIBRARY BLOCK================================================================================================
 
-FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, quarterly_wage, ievs_year, all_programs)
+'This is the custom function that checks the JOBS panels and builds the dialog to display all the information
+FUNCTION income_matrix(income_matrix_array, match_name, match_employer, quarter, quarterly_wage, match_year, all_programs)
 	CALL navigate_to_MAXIS_screen("STAT", "MEMB")
 	DO
 		EMReadScreen ref_num, 2, 4, 33
@@ -68,6 +58,7 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 	'		(x, 4) = prosp
 	'		(x, 5) = pic
 	'		(x, 6) = hc inc est
+	'		(x, 7) = NO LONGER USED
 	'		(x, 8) = quarterly retro total
 	'		(x, 9) = quarterly prosp total
 	'		(x, 10) = quarterly pic
@@ -76,14 +67,15 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 	num_of_income_panels = 0
 	ReDim income_matrix_array(30, 6)
 	
-	IF quarter = 1 THEN 
-		months_array = "01" & "/" & right(ievs_year, 2) & ",02" & "/" & right(ievs_year, 2) & ",03" & "/" & right(ievs_year, 2) & ""
-	ELSEIF quarter = 2 THEN 
-		months_array = "04" & "/" & right(ievs_year, 2) & ",05" & "/" & right(ievs_year, 2) & ",06" & "/" & right(ievs_year, 2) & ""
-	ELSEIF quarter = 3 THEN
-		months_array = "07" & "/" & right(ievs_year, 2) & ",08" & "/" & right(ievs_year, 2) & ",09" & "/" & right(ievs_year, 2) & ""
-	ELSEIF quarter = 4 THEN 
-		months_array = "10" & "/" & right(ievs_year, 2) & ",11" & "/" & right(ievs_year, 2) & ",12" & "/" & right(ievs_year, 2) & ""
+	'Figuring out which months the script needs to check depending on the quarter found in the match details
+	IF quarter = 1 OR quarter = "1" THEN 
+		months_array = "01" & "/" & right(match_year, 2) & ",02" & "/" & right(match_year, 2) & ",03" & "/" & right(match_year, 2) & ""
+	ELSEIF quarter = 2 OR quarter = "2" THEN 
+		months_array = "04" & "/" & right(match_year, 2) & ",05" & "/" & right(match_year, 2) & ",06" & "/" & right(match_year, 2) & ""
+	ELSEIF quarter = 3 OR quarter = "3" THEN
+		months_array = "07" & "/" & right(match_year, 2) & ",08" & "/" & right(match_year, 2) & ",09" & "/" & right(match_year, 2) & ""
+	ELSEIF quarter = 4 OR quarter = "4" THEN 
+		months_array = "10" & "/" & right(match_year, 2) & ",11" & "/" & right(match_year, 2) & ",12" & "/" & right(match_year, 2) & ""
 	END IF
 	
 	'adding CM and CM+1 to array
@@ -98,10 +90,10 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 	months_array = split(months_array, ",")
 	
 	'JOBS
-	FOR EACH ievs_month IN months_array
+	FOR EACH this_month IN months_array
 		back_to_SELF
-		EMWriteScreen left(ievs_month, 2), 20, 43
-		EMWriteScreen right(ievs_month, 2), 20, 46
+		EMWriteScreen left(this_month, 2), 20, 43
+		EMWriteScreen right(this_month, 2), 20, 46
 		CALL navigate_to_MAXIS_screen("STAT", "JOBS")
 		'Checking to make sure the client was active in that particular month
 		EMReadScreen invalid_month, 60, 24, 2
@@ -116,14 +108,15 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 					transmit
 					EMReadScreen cl_name, 30, 4, 36
 					cl_name = trim(cl_name)
-					IF cl_name = ievs_name THEN 
+					IF cl_name = client_name THEN 
 						EMReadScreen num_of_jobs, 1, 2, 78
 						IF num_of_jobs <> "0" THEN 
 							DO
 								EMReadScreen jobs_end_date, 8, 9, 49
 								jobs_end_date = replace(jobs_end_date, " ", "/")
-								first_of_month = left(ievs_month, 2) & "/01/" & right(ievs_month, 2)
+								first_of_month = left(this_month, 2) & "/01/" & right(this_month, 2)
 								IF jobs_end_date = "__/__/__" THEN  
+									'Checking the JOBS panel if it has no end date
 									num_of_income_panels = num_of_income_panels + 1
 									income_matrix_array(num_of_income_panels, 0) = ref_num & " " & cl_name
 									EMReadScreen jobs_num, 2, 2, 72
@@ -131,7 +124,7 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 									income_matrix_array(num_of_income_panels, 1) = "JOBS " & jobs_num
 									EMReadScreen employer, 30, 7, 42
 									employer = replace(employer, "_", "")
-									income_matrix_array(num_of_income_panels, 2) = employer & " (" & ievs_month & ")"
+									income_matrix_array(num_of_income_panels, 2) = employer & " (" & this_month & ")"
 									EMReadScreen retro_amt, 8, 17, 38
 									retro_amt = trim(retro_amt)
 									IF retro_amt = "" THEN retro_amt = 0.00
@@ -140,8 +133,27 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 									prosp_amt = trim(prosp_amt)
 									IF prosp_amt = "" THEN prosp_amt = 0.00
 									income_matrix_array(num_of_income_panels, 4) = prosp_amt
-									'Getting in to the PIC
-									EMWriteScreen "X", 19, 38
+									'finding and getting in to the PIC
+									row = 1
+									col = 1
+									EMSearch "_ FS Prosp", row, col
+									IF row <> 0 THEN 
+										pic_row = row
+										pic_col = col
+									ELSE
+										row = 1
+										col = 1
+										EMSearch "_ FS PIC", row, col
+										IF row <> 0 THEN 
+											pic_row = row
+											pic_col = col
+										ELSE
+											script_end_procedure("The script failed to find the PIC. The script will now stop.")
+										END IF
+									END IF
+									
+									EMWriteScreen "X", pic_row, pic_col
+									msgbox "pause"
 									transmit
 									EMReadScreen pic_amt, 8, 18, 56
 									pic_amt = trim(pic_amt)
@@ -153,7 +165,26 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 									'Grabbing the pay frequency
 									EMReadScreen pay_freq, 1, 18, 35
 									'Going into the HC Inc Est
-									EMWriteScreen "X", 19, 54
+									row = 1
+									col = 1
+									EMSearch "_ HC Inc", row, col
+									IF row <> 0 THEN 
+										hc_est_row = row
+										hc_est_col = col
+									ELSE
+										row = 1
+										col = 1
+										EMSearch "_ HC Est", row, col
+										IF row <> 0 THEN 
+											hc_est_row = row
+											hc_est_col = col
+										ELSE
+											script_end_procedure("The script failed to find the HC Income Estimator. The script will now stop.")
+										END IF
+									END IF
+									
+									EMWriteScreen "X", hc_est_row, hc_est_col
+									msgbox "pause2"
 									transmit
 									'Reading the budgetted amount
 									EMReadScreen hc_inc_est, 8, 11, 63
@@ -172,6 +203,7 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 									transmit
 									
 								ELSEIF (jobs_end_date <> "__/__/__" AND DateDiff("D", jobs_end_date, first_of_month) < 0) THEN
+									'Checking the JOBS panel if there is an end date and the end date is in the future
 									num_of_income_panels = num_of_income_panels + 1
 									income_matrix_array(num_of_income_panels, 0) = ref_num & " " & cl_name
 									EMReadScreen jobs_num, 2, 2, 72
@@ -179,7 +211,7 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 									income_matrix_array(num_of_income_panels, 1) = "JOBS " & jobs_num
 									EMReadScreen employer, 30, 7, 42
 									employer = replace(employer, "_", "")
-									income_matrix_array(num_of_income_panels, 2) = employer & " (" & ievs_month & ")"
+									income_matrix_array(num_of_income_panels, 2) = employer & " (" & this_month & ")"
 									EMReadScreen retro_amt, 8, 17, 38
 									retro_amt = trim(retro_amt)
 									IF retro_amt = "" THEN retro_amt = 0.00
@@ -238,6 +270,7 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 		IF InStr(all_employers_array, current_employer) = 0 THEN all_employers_array = all_employers_array & current_employer & ","
 	NEXT
 	
+	'cleaning up the array
 	all_employers_array = all_employers_array & "~~"
 	all_employers_array = replace(all_employers_array, ",~~", "")
 	all_employers_array = trim(all_employers_array)
@@ -245,13 +278,14 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 	
 	number_of_unique_employers = ubound(all_employers_array)
 	
-	REDIM quarterly_output_array(number_of_unique_employers, 4)
+	REDIM quarterly_output_array(number_of_unique_employers, 5)
 	'contents of each position for this array
 	' (x, 0) = employer
 	' (x, 1) = quarterly retro
 	' (x, 2) = quarterly prosp
 	' (x, 3) = quarterly PIC
 	' (x, 4) = quarterly HC
+	' (x, 5) = name from jobs panel
 	
 	'Adding the employer names to the output array
 	employer_position = 0
@@ -269,8 +303,8 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 		quarterly_output_array(unique_job, 4) = 0
 	NEXT
 	
+	'Creating quarterly totals for each unique jaeorb
 	FOR unique_job = 0 TO number_of_unique_employers		
-		'Creating quarterly totals for each unique jaeorb
 		FOR i = 1 TO num_of_income_panels
 			IF (current_month & ")") <> right(income_matrix_array(i, 2), 6) AND (current_month_plus_one & ")") <> right(income_matrix_array(i, 2), 6) AND _
 				TRIM(quarterly_output_array(unique_job, 0)) = TRIM(left(income_matrix_array(i, 2), len(income_matrix_array(i, 2)) - 7)) THEN   'this will make sure we only add the first 3 months (the ones from the quarter in question)
@@ -278,20 +312,21 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 					quarterly_output_array(unique_job, 2) = quarterly_output_array(unique_job, 2) + income_matrix_array(i, 4)		'Quarterly Prosp for that job
 					quarterly_output_array(unique_job, 3) = quarterly_output_array(unique_job, 3) + income_matrix_array(i, 5)		'Quarterly PIC for that job
 					quarterly_output_array(unique_job, 4) = quarterly_output_array(unique_job, 4) + income_matrix_array(i, 6)		'Quarterly HC for that job
+					quarterly_output_array(unique_job, 5) = income_matrix_array(i, 0)		'name from jobs panel for that job to compare against name read from WAGE. 
 			END IF
 		NEXT
 	NEXT
 	
 	dlg_height = 150 + (num_of_income_panels * 15)
 			
-	BeginDialog income_matrix_dlg, 0, 0, 510, dlg_height, "Income Matrix"
+	BeginDialog dialog1, 0, 0, 510, dlg_height, "Wage Information"
 		ButtonGroup ButtonPressed
 			OkButton 350, (135 + (15 * num_of_income_panels)), 50, 15
 			CancelButton 400, (135 + (15 * num_of_income_panels)), 50, 15
-		Text 15, 15, 60, 10, "IEVS Client"
-		Text 15, 25, 120, 10, ievs_name
-		Text 150, 15, 60, 10, "IEVS Employer"
-		Text 150, 25, 160, 10, ievs_employer
+		Text 15, 15, 60, 10, "Client Name"  'from WAGE panel
+		Text 15, 25, 120, 10, client_name
+		Text 150, 15, 60, 10, "Employer Name"
+		Text 150, 25, 160, 10, match_employer
 		Text 330, 15, 30, 10, "Quarter"
 		Text 345, 25, 20, 10, "Q" & quarter
 		Text 380, 15, 60, 10, "Quarterly Wages"
@@ -306,13 +341,20 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 		Text 450, 45, 40, 10, "Quarterly HC"
 		'Displaying quarterly wage info for each jaeorb
 		FOR z = 0 TO number_of_unique_employers
-			Text 15, 55 + (10 * z), 120, 10, ievs_name
+			'Client name from jobs panel
+			Text 15, 55 + (10 * z), 120, 10, quarterly_output_array(z, 5)
+			'Employer name
 			Text 150, 55 + (10 * z), 160, 10, quarterly_output_array(z, 0)
+			'Quarterly retro amount for this job
 			Text 330, 55 + (10 * z), 40, 10, FormatCurrency(quarterly_output_array(z, 1))
+			'Quarterly prospective amount for this job
 			Text 370, 55 + (10 * z), 40, 10, FormatCurrency(quarterly_output_array(z, 2))
+			'Quarterly PIC amount for this job
 			Text 410, 55 + (10 * z), 40, 10, FormatCurrency(quarterly_output_array(z, 3))
+			'Quarterly HC amount for this job
 			Text 450, 55 + (10 * z), 40, 10, FormatCurrency(quarterly_output_array(z, 4))	
 		NEXT
+		'Displaying the headers for the output
 		Text 15, 105, 60, 10, "Member #, Name"
 		Text 110, 105, 40, 10, "Panel, #"
 		Text 150, 105, 85, 10, "Employer (Month/Year)"
@@ -320,35 +362,48 @@ FUNCTION income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, q
 		Text 370, 105, 30, 10, "Prosp"
 		Text 410, 105, 30, 10, "PIC"
 		Text 450, 105, 35, 10, "HC Inc Est"
-		'Displaying information for each job each month
+		'Displaying information for each job each month as taken from JOBS
 		FOR i = 1 to num_of_income_panels
+			'Client name and reference number from JOBS Panel
 			Text 15, (105 + (10 * i)), 120, 10, income_matrix_array(i, 0)
+			'JOBS panel number
 			Text 110, (105 + (10 * i)), 40, 10, income_matrix_array(i, 1)
+			'JOBS employer name
 			Text 150, (105 + (10 * i)), 190, 10, income_matrix_array(i, 2)
+			'Retro amount for that JOBS panel that month
 			Text 330, (105 + (10 * i)), 30, 10, income_matrix_array(i, 3)
+			'Prospective amount for that JOBS panel that month
 			Text 370, (105 + (10 * i)), 30, 10, income_matrix_array(i, 4)
+			'PIC amount for that JOBS panel that month
 			Text 410, (105 + (10 * i)), 30, 10, income_matrix_array(i, 5)
+			'HC amount for that JOBS panel that month
 			Text 450, (105 + (10 * i)), 30, 10, income_matrix_array(i, 6)
 		NEXT
 	EndDialog
+	
 	CALL navigate_to_MAXIS_screen("CASE", "PERS") 'naving to case pers to see what is currently on what programs. 
-	Dialog income_matrix_dlg
-		IF ButtonPressed = 0 THEN stopscript
+	
+	'Calling the dialog
+	Dialog dialog1
+		If ButtonPressed = 0 THEN script_end_procedure("Script cancelled.")
+		
 END FUNCTION
 
-'The script......
+'=============================== The script ===================================
 EMConnect ""
 
 'Navigating to WAGE match
 EMSendKey "T"
 transmit
+'Making sure that the user is on an acceptable DAIL message
 EMReadScreen wage, 4, 6, 6
-IF wage <> "WAGE" THEN script_end_procedure("These aren't the droids you're looking for.")
+IF wage <> "WAGE" THEN script_end_procedure("Your cursor is not set on a WAGE message type. Please select an appropriate DAIL message and try again.")
 
+'Navigating deeper into the match interface
 CALL write_value_and_transmit("I", 6, 3)
-EMReadScreen case_number, 8, 20, 38
-case_number = trim(case_number)
-case_number = replace(case_number, "_", "")
+EMReadScreen MAXIS_case_number, 8, 20, 38
+MAXIS_case_number = trim(MAXIS_case_number)
+MAXIS_case_number = replace(MAXIS_case_number, "_", "")
 CALL write_value_and_transmit("IEVP", 20, 71)
 EMSendKey "D"
 transmit
@@ -356,21 +411,23 @@ EMReadScreen all_programs, 10, 7, 13
 all_programs = trim(all_programs)
 PF3
 
-'Reading IEVS info
+'Reading match information
 CALL write_value_and_transmit("WAGE", 19, 69)
-EMReadScreen ievs_name, 30, 4, 25
-ievs_name = trim(ievs_name)
-EMReadScreen quarterly_wage, 7, 8, 8
+EMReadScreen client_name, 30, 4, 25
+client_name = trim(client_name)
+EMReadScreen quarterly_wage, 9, 8, 6
+quarterly_wage = trim(quarterly_wage)
 EMReadScreen quarter, 1, 8, 16
-EMReadScreen ievs_employer, 20, 8, 25
-ievs_employer = trim(ievs_employer)
-EMReadScreen ievs_year, 4, 8, 19
+EMReadScreen match_employer, 20, 8, 25
+match_employer = trim(match_employer)
+EMReadScreen match_year, 4, 8, 19
 PF3
 
-
+'declaring the m-d array...20 is completely arbitrary, but oh well
 ReDim income_matrix_array(20, 6)
-CALL income_matrix(income_matrix_array, ievs_name, ievs_employer, quarter, quarterly_wage, ievs_year, all_programs)
+CALL income_matrix(income_matrix_array, client_name, match_employer, quarter, quarterly_wage, match_year, all_programs)
 CALL check_for_MAXIS(false)
+'Returning the user back to DAIL
 CALL navigate_to_MAXIS_screen("DAIL", "DAIL")
 
 script_end_procedure("")
