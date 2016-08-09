@@ -153,7 +153,6 @@ FUNCTION income_matrix(income_matrix_array, match_name, match_employer, quarter,
 									END IF
 									
 									EMWriteScreen "X", pic_row, pic_col
-									msgbox "pause"
 									transmit
 									EMReadScreen pic_amt, 8, 18, 56
 									pic_amt = trim(pic_amt)
@@ -184,7 +183,6 @@ FUNCTION income_matrix(income_matrix_array, match_name, match_employer, quarter,
 									END IF
 									
 									EMWriteScreen "X", hc_est_row, hc_est_col
-									msgbox "pause2"
 									transmit
 									'Reading the budgetted amount
 									EMReadScreen hc_inc_est, 8, 11, 63
