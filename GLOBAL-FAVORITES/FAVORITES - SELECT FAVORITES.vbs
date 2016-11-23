@@ -2,7 +2,7 @@
 
 'LOADING GLOBAL VARIABLES--------------------------------------------------------------------
 Set run_another_script_fso = CreateObject("Scripting.FileSystemObject")
-Set fso_command = run_another_script_fso.OpenTextFile("Q:\Blue Zone Scripts\Public assistance script files\Script Files\SETTINGS - GLOBAL VARIABLES.vbs")
+Set fso_command = run_another_script_fso.OpenTextFile("Q:\Blue Zone Scripts\Child Support\locally-installed-files\~globvar.vbs")
 text_from_the_other_script = fso_command.ReadAll
 fso_command.Close
 Execute text_from_the_other_script
@@ -10,6 +10,38 @@ Execute text_from_the_other_script
 'Gathering stats
 name_of_script = "ACTIONS - CHOOSE FAVORITE SCRIPTS.vbs"
 start_time = timer
+
+'LOADING FUNCTIONS LIBRARY FROM GITHUB REPOSITORY===========================================================================
+IF IsEmpty(FuncLib_URL) = TRUE THEN	'Shouldn't load FuncLib if it already loaded once
+	IF run_locally = FALSE or run_locally = "" THEN	   'If the scripts are set to run locally, it skips this and uses an FSO below.
+		IF use_master_branch = TRUE THEN			   'If the default_directory is C:\DHS-MAXIS-Scripts\Script Files, you're probably a scriptwriter and should use the master branch.
+			FuncLib_URL = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/master/MASTER%20FUNCTIONS%20LIBRARY.vbs"
+		Else											'Everyone else should use the release branch.
+			FuncLib_URL = "https://raw.githubusercontent.com/MN-Script-Team/BZS-FuncLib/RELEASE/MASTER%20FUNCTIONS%20LIBRARY.vbs"
+		End if
+		SET req = CreateObject("Msxml2.XMLHttp.6.0")				'Creates an object to get a FuncLib_URL
+		req.open "GET", FuncLib_URL, FALSE							'Attempts to open the FuncLib_URL
+		req.send													'Sends request
+		IF req.Status = 200 THEN									'200 means great success
+			Set fso = CreateObject("Scripting.FileSystemObject")	'Creates an FSO
+			Execute req.responseText								'Executes the script code
+		ELSE														'Error message
+			critical_error_msgbox = MsgBox ("Something has gone wrong. The Functions Library code stored on GitHub was not able to be reached." & vbNewLine & vbNewLine &_
+                                            "FuncLib URL: " & FuncLib_URL & vbNewLine & vbNewLine &_
+                                            "The script has stopped. Please check your Internet connection. Consult a scripts administrator with any questions.", _
+                                            vbOKonly + vbCritical, "BlueZone Scripts Critical Error")
+            StopScript
+		END IF
+	ELSE
+		FuncLib_URL = "C:\BZS-FuncLib\MASTER FUNCTIONS LIBRARY.vbs"
+		Set run_another_script_fso = CreateObject("Scripting.FileSystemObject")
+		Set fso_command = run_another_script_fso.OpenTextFile(FuncLib_URL)
+		text_from_the_other_script = fso_command.ReadAll
+		fso_command.Close
+		Execute text_from_the_other_script
+	END IF
+END IF
+'END FUNCTIONS LIBRARY BLOCK================================================================================================
 
 '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -19,95 +51,28 @@ start_time = timer
 '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
-'>>> A class for each script item
-'>>> This is needed because it will enable the script to build the array of scripts.
-'>>> This needs to be removed when the class is added to FuncLib
-class script
-	public script_name
-	public file_name
-	public description
-	public button
-
-	public property get button_size	'This part determines the size of the button dynamically by determining the length of the script name, multiplying that by 3.5, rounding the decimal off, and adding 10 px
-		button_size = round ( len( script_name ) * 3.5 ) + 10
-	end property
-end class
-
 '>>> Determining the location of the user's favorites list. 
 '>>> This value should be stored in Global Variables for state-wide deployment.
-network_location_of_favorites_text_file = "H:\my favorite scripts.txt"
-
-'>>> Telling the script main menus that we do not need to call FuncLib or build the dialogs
-run_from_favorites = TRUE
+network_location_of_favorites_text_file = "H:\my favorite cs scripts.txt"
 
 'Creating the object to the URL a la text file
 SET get_all_scripts = CreateObject("Msxml2.XMLHttp.6.0")
 
-'Grabbing all the actions scripts
-actions_url = "https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/GLOBAL-FAVORITES/ACTIONS-MAIN%20MENU.vbs"
-'Grabbing all the bulk scripts
-bulk_url = "https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/GLOBAL-FAVORITES/BULK-MAIN%20MENU.vbs"
-'grabbing all the Notes scripts
-notes_url = "https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/GLOBAL-FAVORITES/NOTES-MAIN%20MENU.vbs"
-'grabbing all the notices scripts
-notices_url = "https://raw.githubusercontent.com/RobertFewins-Kalb/Anoka-Specific-Scripts/master/GLOBAL-FAVORITES/NOTICES-MAIN%20MENU.vbs"
-'Creating an array of URLs
-all_url_array = actions_url & "UUDDLRLRBA" & bulk_url & "UUDDLRLRBA" & notes_url & "UUDDLRLRBA" & notices_url
-all_url_array = split(all_url_array, "UUDDLRLRBA")
+'switching up the script_repository because the all scripts file is not in the Script Files folder
+all_scripts_repo = "https://raw.githubusercontent.com/MN-Script-Team/DHS-PRISM-Scripts/master/~complete-list-of-scripts.vbs"
 
 'Building an array of all scripts
-FOR EACH menu_url IN all_url_array
-	'Opening the URL for the given main menu
-	get_all_scripts.open "GET", menu_url, FALSE
-	get_all_scripts.send			
-	IF get_all_scripts.Status = 200 THEN	
-		Set filescriptobject = CreateObject("Scripting.FileSystemObject")		
-		Execute get_all_scripts.responseText
-	ELSE							
-		'If the script cannot open the URL provided...
-		MsgBox 	"Something went wrong with the URL: " & menu_url
-		stopscript
-	END IF
-NEXT	
-
-'>>> Building the array of all scripts from the arrays within the main menus. These arrays should 
-'>>> probably be cleaned up for pushing this script outside Anoka.
-'-----------------------
-'>>> I would like to see something like all_bulk_scripts, all_notes_scripts, all_notices_scripts
-all_scripts_array = ""
-FOR EACH specific_script IN script_array_ACTIONS_main
-	all_scripts_array = all_scripts_array & specific_script.file_name & "~~~"
-NEXT
-FOR EACH specific_script IN script_array_BULK_main
-	all_scripts_array = all_scripts_array & specific_script.file_name & "~~~"
-NEXT
-FOR EACH specific_script IN script_array_BULK_list
-	all_scripts_array = all_scripts_array & specific_script.file_name & "~~~"
-NEXT
-FOR EACH specific_script IN script_array_0_to_C
-	all_scripts_array = all_scripts_array & specific_script.file_name & "~~~"
-NEXT
-FOR EACH specific_script IN script_array_D_to_F
-	all_scripts_array = all_scripts_array & specific_script.file_name & "~~~"
-NEXT
-FOR EACH specific_script IN script_array_G_to_L
-	all_scripts_array = all_scripts_array & specific_script.file_name & "~~~"
-NEXT
-FOR EACH specific_script IN script_array_M_to_Q
-	all_scripts_array = all_scripts_array & specific_script.file_name & "~~~"
-NEXT
-FOR EACH specific_script IN script_array_R_to_Z
-	all_scripts_array = all_scripts_array & specific_script.file_name & "~~~"
-NEXT
-FOR EACH specific_script IN script_array_LTC
-	all_scripts_array = all_scripts_array & specific_script.file_name & "~~~"
-NEXT
-FOR EACH specific_script IN script_array_NOTICES_main
-	all_scripts_array = all_scripts_array & specific_script.file_name & "~~~"
-NEXT
-FOR EACH specific_script IN script_array_NOTICES_list
-	all_scripts_array = all_scripts_array & specific_script.file_name & "~~~"
-NEXT
+'Opening the URL for the given main menu
+get_all_scripts.open "GET", all_scripts_repo, FALSE
+get_all_scripts.send			
+IF get_all_scripts.Status = 200 THEN	
+	Set filescriptobject = CreateObject("Scripting.FileSystemObject")		
+	Execute get_all_scripts.responseText
+ELSE							
+	'If the script cannot open the URL provided...
+	MsgBox 	"Something went wrong with the URL: " & all_scripts_repo
+	stopscript
+END IF
 
 'Warning/instruction box
 MsgBox "This script will display a dialog with various scripts on it."  & vbNewLine &_
@@ -116,26 +81,30 @@ MsgBox "This script will display a dialog with various scripts on it."  & vbNewL
 		"making your selection hit OK and your menu will be updated. " & vbNewLine & vbNewLine &_
 		"- You will be unable to edit NEW Scripts and Recommended Scripts."
 
-'Removing .vbs for readability for the end user...they don't need to see that
-all_scripts_array = all_scripts_array & "~THE~END~"
-all_scripts_array = replace(all_scripts_array, "~THE~END~", "")
-all_scripts_array = replace(all_scripts_array, ".vbs", "")
+REDIM scripts_multidimensional_array(ubound(cs_scripts_array), 1)
 
-all_scripts_array = trim(all_scripts_array)
-all_scripts_array = split(all_scripts_array, "~~~")
-
-number_of_scripts = UBound(all_scripts_array)
-
-'Creating a new multi-dimensional array for this script. We need to hang on to the checked/unchecked value.
-ReDim scripts_multidimensional_array(number_of_scripts, 1)
-
-'Converting the single-dimensional array into a multi-dimensional array.
-scr_pos = 0
-FOR EACH scriptName IN all_scripts_array
-	scripts_multidimensional_array(scr_pos, 0) = scriptName
-	scripts_multidimensional_array(scr_pos, 1) = 0
-	scr_pos = scr_pos + 1
+'determining the number of each kind of script...by category
+number_of_scripts = 0
+actions_scripts = 0
+bulk_scripts = 0
+calc_scripts = 0
+notes_scripts = 0
+FOR i = 0 TO ubound(cs_scripts_array)
+	'we are going to exclude navigation and utility scripts
+	IF cs_scripts_array(i).category <> "nav" AND cs_scripts_array(i).category <> "utilities" THEN 
+		number_of_scripts = number_of_scripts + 1
+		IF cs_scripts_array(i).category = "actions" THEN 
+			actions_scripts = actions_scripts + 1
+		ELSEIF cs_scripts_array(i).category = "bulk" THEN 
+			bulk_scripts = bulk_scripts + 1
+		ELSEIF cs_scripts_array(i).category = "calculators" THEN 
+			calc_scripts = calc_scripts + 1
+		ELSEIF cs_scripts_array(i).category = "notes" THEN 
+			notes_scripts = notes_scripts + 1
+		END IF
+	END IF
 NEXT
+
 
 '>>> If the user has already selected their favorites, the script will open that file and
 '>>> and read it, storing the contents in the variable name ''user_scripts_array''
@@ -151,48 +120,136 @@ With oTxtFile
 END WITH
 
 '>>> Determining the width of the dialog from the number of scripts that are available...
-IF number_of_scripts <= 39 THEN 
-	dia_width = 205
-ELSEIF number_of_scripts >= 40 AND number_of_scripts <=79 THEN 
-	dia_width = 400
-ELSEIF number_of_scripts >= 80 AND number_of_scripts <= 119 THEN 
-	dia_width = 605
-ELSEIF number_of_scripts >= 120 AND number_of_scripts <= 159 THEN 
-	dia_width = 800
+'the dialog starts with a width of 800
+dia_width = 800
+'if a second column of actions scripts is needed, the dialog increases in width by 195
+IF actions_scripts >= 40 AND actions_scripts <= 79 THEN 
+	dia_width = dia_width + 195
+	'if a third column of actions scripts is needed, the dialog increases in width by 195
+ELSEIF actions_scripts >= 80 THEN 
+	dia_width = dia_width + 195
+END IF
+'if a second column of bulk scripts is needed, the dialog increases in width by 195
+IF bulk_scripts >= 40 AND bulk_scripts <= 79 THEN 
+	dia_width = dia_width + 195
+	'if a third column of bulk scripts is needed, the dialog increases in width by 195
+ELSEIF bulk_scripts >= 80 THEN 
+	dia_width = dia_width + 195
+END IF
+'if a second column of calc scripts is needed, the dialog increases in width by 195
+IF calc_scripts >= 40 AND calc_scripts <= 79 THEN 
+	dia_width = dia_width + 195
+	'if a third column of calc scripts is needed, the dialog increases in width by 195
+ELSEIF calc_scripts >= 80 THEN 
+	dia_width = dia_width + 195
+END IF
+'if a second column of notes scripts is needed, the dialog increases in width by 195
+IF notes_scripts >= 40 AND notes_scripts <= 79 THEN 
+	dia_width = dia_width + 195
+	'if a third column of notes scripts is needed, the dialog increases in width by 195
+ELSEIF notes_scripts >= 80 AND notes_scripts <= 119 THEN 
+	dia_width = dia_width + 195
+	'if a fourth column of notes scripts is needed, the dialog increases in width by 195
+ELSEIF notes_scripts >= 120 THEN 
+	dia_width = dia_width + 195
 END IF
 
 '>>> Building the dialog
 BeginDialog fav_dlg, 0, 0, dia_width, 440, "Select your favorites"
 	ButtonGroup ButtonPressed
-		OkButton 5, 5, 50, 15
+		OkButton 5, 5, 50, 15 
 		CancelButton 55, 5, 50, 15
 		PushButton 165, 5, 70, 15, "Reset Favorites", reset_favorites_button
-	row = 30
 	'>>> Creating the display of all scripts for selection (in checkbox form)
-	FOR i = 0 to number_of_scripts
-		IF scripts_multidimensional_array(i, 0) <> "" THEN 
+	script_position = 0		' <<< This value is tied to the number_of_scripts variable
+		col = 10
+		row = 30
+	FOR i = 0 to ubound(cs_scripts_array)
+		IF cs_scripts_array(i).category = "actions" THEN 
 			'>>> Determining the positioning of the checkboxes.
-			'>>> For some reason, even though we exceed 65 objects, we do not hit any issues with missing scripts. Oh well.
-			IF i <= 39 THEN 
-				col = 10
-			ELSEIF i >= 40 AND i <= 79 THEN 
-				col = 205
-			ELSEIF i >= 80 AND i <= 119 THEN 
-				col = 400
-			ELSEIF i > 119 THEN
-				col = 605
+			'>>> For some reason, even though we exceed 65 objects, we do not hit any issues with missing scripts. Oh well.	
+			IF row = 430 THEN 
+				row = 30
+				col = col + 195
 			END IF
-			IF row = 430 THEN row = 30
 			'>>> If the script in question is already known to the list of scripts already picked by the user, the check box is defaulted to checked.
-			IF InStr(user_scripts_array, scripts_multidimensional_array(i, 0)) <> 0 THEN 
-				scripts_multidimensional_array(i, 1) = 1
+			IF InStr(UCASE(replace(user_scripts_array, "-", " ")), UCASE(replace(cs_scripts_array(i).script_name, "-", " "))) <> 0 THEN  
+				scripts_multidimensional_array(script_position, 1) = 1
 			ELSE
-				scripts_multidimensional_array(i, 1) = 0
+				scripts_multidimensional_array(script_position, 1) = 0
 			END IF
-			CheckBox col, row, 185, 10, scripts_multidimensional_array(i, 0), scripts_multidimensional_array(i, 1)
+			scripts_multidimensional_array(script_position, 0) = "ACTIONS: " & replace(cs_scripts_array(i).file_name, ".vbs", "")
+			CheckBox col, row, 185, 10, UCASE(replace(scripts_multidimensional_array(script_position, 0), "-", " ")), scripts_multidimensional_array(script_position, 1) 
 			row = row + 10
+			script_position = script_position + 1
 		END IF
 	NEXT
+		col = col + 195
+		row = 30
+	FOR i = 0 to ubound(cs_scripts_array)
+		IF cs_scripts_array(i).category = "bulk" THEN 
+			'>>> Determining the positioning of the checkboxes.
+			'>>> For some reason, even though we exceed 65 objects, we do not hit any issues with missing scripts. Oh well.
+			IF row = 430 THEN 
+				row = 30
+				col = col + 195
+			END IF
+			'>>> If the script in question is already known to the list of scripts already picked by the user, the check box is defaulted to checked.
+			IF InStr(UCASE(replace(user_scripts_array, "-", " ")), UCASE(replace(cs_scripts_array(i).script_name, "-", " "))) <> 0 THEN  
+				scripts_multidimensional_array(script_position, 1) = 1
+			ELSE
+				scripts_multidimensional_array(script_position, 1) = 0
+			END IF
+			scripts_multidimensional_array(script_position, 0) = "BULK: " & replace(cs_scripts_array(i).file_name, ".vbs", "")
+			CheckBox col, row, 185, 10, UCASE(replace(scripts_multidimensional_array(script_position, 0), "-", " ")), scripts_multidimensional_array(script_position, 1) 
+			row = row + 10
+			script_position = script_position + 1
+		END IF
+	NEXT
+		row = 30
+		col = col + 195
+	FOR i = 0 to ubound(cs_scripts_array)
+		IF cs_scripts_array(i).category = "calculators" THEN 
+			'>>> Determining the positioning of the checkboxes.
+			'>>> For some reason, even though we exceed 65 objects, we do not hit any issues with missing scripts. Oh well.
+			IF row = 430 THEN 
+				row = 30
+				col = col + 195
+			END IF
+			'>>> If the script in question is already known to the list of scripts already picked by the user, the check box is defaulted to checked.
+			IF InStr(UCASE(replace(user_scripts_array, "-", " ")), UCASE(replace(cs_scripts_array(i).script_name, "-", " "))) <> 0 THEN  
+				scripts_multidimensional_array(script_position, 1) = 1
+			ELSE
+				scripts_multidimensional_array(script_position, 1) = 0
+			END IF
+			scripts_multidimensional_array(script_position, 0) = "CALC: " & replace(cs_scripts_array(i).file_name, ".vbs", "")
+			CheckBox col, row, 185, 10, UCASE(replace(scripts_multidimensional_array(script_position, 0), "-", " ")), scripts_multidimensional_array(script_position, 1) 
+			row = row + 10
+			script_position = script_position + 1
+		END IF
+	NEXT
+		col = col + 195
+		row = 30
+	FOR i = 0 to ubound(cs_scripts_array)
+		IF cs_scripts_array(i).category = "notes" THEN 
+			'>>> Determining the positioning of the checkboxes.
+			'>>> For some reason, even though we exceed 65 objects, we do not hit any issues with missing scripts. Oh well.
+			IF row = 430 THEN 
+				row = 30
+				col = col + 195
+			END IF
+			'>>> If the script in question is already known to the list of scripts already picked by the user, the check box is defaulted to checked.
+			IF InStr(UCASE(replace(user_scripts_array, "-", " ")), UCASE(replace(cs_scripts_array(i).script_name, "-", " "))) <> 0 THEN  
+				scripts_multidimensional_array(script_position, 1) = 1
+			ELSE
+				scripts_multidimensional_array(script_position, 1) = 0
+			END IF
+			scripts_multidimensional_array(script_position, 0) = "NOTES - " & replace(cs_scripts_array(i).file_name, ".vbs", "")
+			CheckBox col, row, 185, 10, "NOTES: " & UCASE(replace(scripts_multidimensional_array(script_position, 0), "-", " ")), scripts_multidimensional_array(script_position, 1) 
+			row = row + 10
+			script_position = script_position + 1
+		END IF
+	NEXT	
 EndDialog
 
 '>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -223,19 +280,18 @@ DO
 	LOOP UNTIL ButtonPressed <> 0 AND ButtonPressed <> reset_favorites_button
 	'>>> Validating that the user does not select more than a prescribed number of scripts.
 	'>>> Exceeding the limit will cause an exception access violation for the Favorites script when it runs.
-	'>>> Currently, that value is 38. That is lower than previous because of the larger number of new scripts. (-Robert, 04/20/2016)
+	'>>> Currently, that value is 30. That is lower than previous because of the larger number of new scripts. (-Robert, 04/20/2016)
 	double_check_array = ""
 	FOR i = 0 to number_of_scripts
 		IF scripts_multidimensional_array(i, 1) = 1 THEN double_check_array = double_check_array & scripts_multidimensional_array(i, 0) & "~"
 	NEXT
 	double_check_array = split(double_check_array, "~")
-	IF ubound(double_check_array) > 37 THEN MsgBox "Your favorites menu is too large. Please limit the number of favorites to no greater than 37."
-	'>>> Exit condition is the user having fewer than 38 scripts in their favorites menu.
-LOOP UNTIL ubound(double_check_array) <= 37
+	IF ubound(double_check_array) > 29 THEN MsgBox "Your favorites menu is too large. Please limit the number of favorites to no greater than 30."
+	'>>> Exit condition is the user having fewer than 30 scripts in their favorites menu.
+LOOP UNTIL ubound(double_check_array) <= 29
 
 '>>> Getting ready to write the user's selection to a text file and save it on a prescribed location on the network.
-'>>> Building the content of the text file.
-favorite_scripts = ""
+'>>> Building the content of the text file.	
 FOR i = 0 to number_of_scripts - 1
 	IF scripts_multidimensional_array(i, 1) = 1 THEN favorite_scripts = favorite_scripts & scripts_multidimensional_array(i, 0) & "~~~"
 NEXT
