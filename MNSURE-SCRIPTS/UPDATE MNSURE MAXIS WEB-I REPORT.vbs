@@ -9,21 +9,10 @@ IF req.Status = 200 THEN	'200 means great success
 	Set fso = CreateObject("Scripting.FileSystemObject") 'Creates an FSO
 	Execute req.responseText 'Executes the script code
 ELSE	'Error message, tells user to try to reach github.com, otherwise instructs to contact Veronica with details (and stops script).
-	MsgBox "Something has gone wrong. The code stored on GitHub was not able to be reached." & vbCr &_
-	vbCr & _
-	"Before contacting Veronica Cary, please check to make sure you can load the main page at www.GitHub.com." & vbCr &_
-	vbCr & _
-	"If you can reach GitHub.com, but this script still does not work, ask an alpha user to contact Veronica Cary and provide the following information:" & vbCr &_
-	vbTab & "- The name of the script you are running." & vbCr &_
-	vbTab & "- Whether or not the script is ""erroring out"" for any other users." & vbCr &_
-	vbTab & "- The name and email for an employee from your IT department," & vbCr & _
-	vbTab & vbTab & "responsible for network issues." & vbCr &_
-	vbTab & "- The URL indicated below (a screenshot should suffice)." & vbCr &_
-	vbCr & _
-	"Veronica will work with your IT department to try and solve this issue, if needed." & vbCr &_
+	MsgBox "It's all gone horribly wrong!!!" & _
 	vbCr &_
 	"URL: " & url
-	script_end_procedure("Script ended due to error connecting to GitHub.")
+	stopscript
 END IF
 
 EMConnect ""
@@ -33,19 +22,22 @@ start_time = timer
 'Opening the Excel file
 Set objExcel = CreateObject("Excel.Application")
 objExcel.Visible = True
-Set objWorkbook = objExcel.Workbooks.Open("H:\MAXIS MNSure Clients 2016-04-06.xls")
+Set objWorkbook = objExcel.Workbooks.Open("H:\MAXIS MNsure Clients\MNsure MAXIS Clients 2017-05-01.xls")
 objExcel.DisplayAlerts = True
-objExcel.Worksheets(2).Activate
-
-number_of_cases = 6367
+objExcel.Worksheets("MAXIS Only").Activate
+number_of_cases = 11935			'<< number of rows as of 05/01/2017
+'number_of_cases = 10221		'<< number of rows as of 03/01/2017
+'number_of_cases = 9928			'<< number of rows as of 02/03/2017
+'number_of_cases = 9058			'<< number of rows as of 01/04/2017
 
 On Error Resume Next
-		
+
+' This is the IE shell that displays the status of the report...
 Set objExplorer = CreateObject("InternetExplorer.Application")
 objExplorer.Navigate "about:blank"   
 objExplorer.ToolBar = 0
 objExplorer.StatusBar = 0
-objExplorer.Width = 600
+objExplorer.Width = 800
 objExplorer.Height = 100 
 objExplorer.Visible = 1             
 objExplorer.Document.Title = "Cleaning up report."
@@ -53,24 +45,19 @@ objExplorer.Document.Body.InnerHTML = "The script is finding the MAXIS workers."
 Wscript.Sleep 1
 
 FOR i = 2 to (number_of_cases + 1)
-	back_to_SELF
-	
+	' reseting variable values that will be used in the next iteration
 	maxis_case_number = objExcel.Cells(i, 7).Value
-	'maxis_case_number = objExcel.Cells(i, 10).Value
 	x_number = ""
 	worker_name = ""
 	supervisor = ""
 	case_noted_in_MAXIS = FALSE
+	PMI_found = false
+	cl_PMI = objExcel.Cells(i, 2).Value
+
+	back_to_SELF
 	
 	'The script starts by trying to get into STAT/MEMB...first to grab the worker's X102 number, their name, and their supervisor's name...
-	EMWriteScreen "STAT", 16, 43
-	EMWriteScreen maxis_case_number, 18, 43
-	EMWriteScreen "MEMB", 21, 70
-	transmit
-	
-	EMReadScreen errr_check, 4, 2, 52
-	IF errr_check = "ERRR" THEN transmit
-	
+	CALL navigate_to_MAXIS_screen("STAT", "MEMB")
 	
 	'...checking to see that the script was able to make it off of SELF...
 	EMReadScreen at_self, 4, 2, 50
@@ -94,10 +81,7 @@ FOR i = 2 to (number_of_cases + 1)
 		supervisor = trim(supervisor)
 		transmit
 		
-		'...checking to look for the PMI on that specific case...
-		PMI_found = false
-		cl_PMI = objExcel.Cells(i, 2).Value
-		
+		'...checking to look for the PMI on that specific case...		
 		DO
 			EMReadScreen PMI_num, 8, 4, 46
 			PMI_num = trim(PMI_num)
@@ -114,7 +98,7 @@ FOR i = 2 to (number_of_cases + 1)
 			EMReadScreen enter_a_valid_command, 21, 24, 2
 		LOOP UNTIL enter_a_valid_command = "ENTER A VALID COMMAND"
 		
-		''If the case is not in X102 then the script will not case note.
+		'If the case is not in X102 then the script will not case note. We are also ONLY going to continue on this case when the PMI is found.
 		IF UCASE(LEFT(x_number, 4)) = "X102" AND UCASE(x_number) <> "X102CLS" AND PMI_found = TRUE THEN
 			'Case noting that the client is active in both systems
 			PF4
@@ -177,6 +161,7 @@ FOR i = 2 to (number_of_cases + 1)
 		END IF
 	END IF
 	
+	' adding the worker's X102, the worker's name, and the worker's supervisor's name to the Excel file
 	objExcel.Cells(i, 16).Value = x_number
 	objExcel.Cells(i, 17).Value = worker_name
 	objExcel.Cells(i, 18).Value = supervisor
@@ -186,10 +171,13 @@ FOR i = 2 to (number_of_cases + 1)
 		objExcel.Cells(i, 19).Value = "COULD NOT CASE NOTE"
 	END IF
 	
+	' generating information about current script run time to display on the report status window
 	current_time = timer
 	run_time = current_time - start_time
 	run_time = FormatNumber(run_time, 2)
-	objExplorer.Document.Body.InnerHTML = "The script is finding the MAXIS workers. It is " & FormatPercent((i - 1)/number_of_cases) & " complete. Current run time = " & run_time & " seconds."
+	' Updating the status of the report
+	objExplorer.Document.Body.InnerHTML = "The script is finding the MAXIS workers. It is " & FormatPercent((i - 1)/number_of_cases) & " complete. Current run time = " & run_time & " seconds. The current row is: " & i
 NEXT
 
+' the script has finished running...
 msgbox "Success!!"
